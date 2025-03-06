@@ -3,6 +3,10 @@ import torch.nn.functional as F
 
 from loss_func import custom_loss
 
+def set_requires_grad(layers, requires_grad):
+    for param in layers:
+        param.requires_grad = requires_grad
+
 def self_feeding(model, xuk, Num_meas):
     initial_input = xuk[:, 0, :]
     num_steps = int(len(xuk[0, :, 0]))
