@@ -83,4 +83,4 @@ print(f"Total training time is: {total_training_time}")
 
 # Result Plotting
 
-plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
+plot_results(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
