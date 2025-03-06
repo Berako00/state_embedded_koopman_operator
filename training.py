@@ -25,51 +25,31 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
   Model_path = [get_model_path(i) for i in range(M)]
 
   for model_path_i in Model_path:
-      training_attempt = 0
-      while True:  # Re-run the training loop until no NaN is encountered
-          training_attempt += 1
-          print(f"\nStarting training attempt #{training_attempt} for model {model_path_i}")
+     
+      model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
+      optimizer = optim.Adam(model.parameters(), lr=lr)
+      loss_list = []
+      running_loss_list = []
+      nan_found = False  # Flag to detect NaNs
 
-          # Instantiate the model and optimizer afresh
-          model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
-          optimizer = optim.Adam(model.parameters(), lr=lr)
-          loss_list = []
-          running_loss_list = []
-          nan_found = False  # Flag to detect NaNs
+      for e in range(eps):
+          running_loss = 0.0
+          for (batch_x,) in train_loader:
+              optimizer.zero_grad()
+              loss = total_loss(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
 
-          for e in range(eps):
-              running_loss = 0.0
-              for (batch_x,) in train_loader:
-                  optimizer.zero_grad()
-                  loss = total_loss(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
+              loss.backward()
+              optimizer.step()
+              running_loss += loss.item()
+              torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
 
-                  # Check if loss is NaN; if so, break out of loops
-                  if torch.isnan(loss):
-                      nan_found = True
-                      print(f"NaN detected at epoch {e+1}. Restarting training attempt.")
-                      break
+          avg_loss = running_loss / len(train_loader)
+          loss_list.append(avg_loss)
+          running_loss_list.append(running_loss)
+          print(f'Model: {c_m}, Epoch: {e+1}, Running loss: {running_loss:.3e}')
 
-                  loss.backward()
-                  optimizer.step()
-                  running_loss += loss.item()
-                  torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
-
-              if nan_found:
-                  break
-
-              avg_loss = running_loss / len(train_loader)
-              loss_list.append(avg_loss)
-              running_loss_list.append(running_loss)
-              print(f'Model: {c_m}, Epoch: {e+1}, Running loss: {running_loss:.3e}')
-
-              # Save the model parameters at the end of each epoch
-              torch.save(model.state_dict(), model_path_i)
-
-          # If no NaN was found during this training attempt, we exit the loop
-          if not nan_found:
-              break
-          else:
-              print("Restarting training loop due to NaN encountered.\n")
+          # Save the model parameters at the end of each epoch
+          torch.save(model.state_dict(), model_path_i)
 
       Models_loss_list.append(running_loss)
       Running_Losses_Array.append(running_loss_list)
