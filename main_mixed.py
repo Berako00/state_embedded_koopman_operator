@@ -12,6 +12,7 @@ from nn_structure import AUTOENCODER
 from training import trainingfcn_mixed
 from data_generation import DataGenerator_mixed
 from debug_func import debug_L12, debug_L3, debug_L4, debug_L5, debug_L6
+from plotting import plot_results
 
 # Set device to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -79,3 +80,7 @@ total_training_time = end_time - start_training_time
 
 print(f"Total time is: {total_time}")
 print(f"Total training time is: {total_training_time}")
+
+# Result Plotting
+
+plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
