@@ -5,7 +5,6 @@ def custom_loss(x_pred, x_target):
     total_custom_loss = torch.sum(torch.mean((x_pred - x_target) ** 2))
     return total_custom_loss
 
-
 def loss_encoder_decoder(xuk, encoder, decoder):
     total_g_loss = torch.tensor(0.0, device=xuk[:, 0, :].device)
     for m in range(0,len(xuk[0, :, 0])):
@@ -70,18 +69,6 @@ def total_loss(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
 
 # Loss functions for mixed training:
 
-def total_loss_forced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
-
-    L_gu = loss_encoder_decoder(xuk, model.u_Encoder, model.u_Decoder)
-    [L_3, pred_3] = loss_3(xuk, Num_meas, model)
-    [L_4, pred_4]  = loss_4(xuk, Num_meas, model)
-    L_5 = loss_5(xuk, Num_meas, S_p, L_3, pred_3, model)
-    L_6 = loss_6(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model)
-
-    L_total = alpha[0]* L_gu +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
-
-    return L_total
-
 def loss_3_uf(xuk, Num_meas, model):
     pred_3 = model.x_Decoder(model.x_Koopman_op(model.x_Encoder(xuk[:, 0, :Num_meas])))
     L_3 = F.mse_loss(pred_3, xuk[:, 1, :Num_meas], reduction='mean')
@@ -115,7 +102,6 @@ def loss_6_uf(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model):
     L_6 = total_6_loss / T
     return L_6
 
-
 def total_loss_unforced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
 
     L_gx = loss_encoder_decoder(xuk[:,:,:Num_meas], model.x_Encoder, model.x_Decoder)
@@ -126,5 +112,17 @@ def total_loss_unforced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
     L_6 = loss_6_uf(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model)
 
     L_total = alpha[0]*(L_gx) +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
+
+    return L_total
+    
+def total_loss_forced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
+
+    L_gu = loss_encoder_decoder(xuk, model.u_Encoder, model.u_Decoder)
+    [L_3, pred_3] = loss_3(xuk, Num_meas, model)
+    [L_4, pred_4]  = loss_4(xuk, Num_meas, model)
+    L_5 = loss_5(xuk, Num_meas, S_p, L_3, pred_3, model)
+    L_6 = loss_6(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model)
+
+    L_total = alpha[0]* L_gu +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
 
     return L_total
