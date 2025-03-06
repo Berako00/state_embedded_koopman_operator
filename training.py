@@ -69,10 +69,10 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
   Lowest_test_loss = min(Test_loss_list)
 
   Lowest_loss_index = Models_loss_list.index(Lowest_loss)
-  print(f"The best model has a running loss of {Lowest_loss} and is model nr. {Lowest_loss_index + 1}")
+  print(f"The best model has a running loss of {Lowest_loss} and is model nr. {Lowest_loss_index}")
 
   Lowest_test_loss_index = Test_loss_list.index(Lowest_test_loss)
-  print(f"The best model has a test running loss of {Lowest_test_loss} and is model nr. {Lowest_test_loss_index + 1}")
+  print(f"The best model has a test running loss of {Lowest_test_loss} and is model nr. {Lowest_test_loss_index}")
 
   Best_Model = Model_path[Lowest_test_loss_index]
 
@@ -192,10 +192,10 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
   Lowest_test_loss = min(Test_loss_list)
 
   Lowest_loss_index = Models_loss_list.index(Lowest_loss)
-  print(f"The best model has a running loss of {Lowest_loss} and is model nr. {Lowest_loss_index + 1}")
+  print(f"The best model has a running loss of {Lowest_loss} and is model nr. {Lowest_loss_index}")
 
   Lowest_test_loss_index = Test_loss_list.index(Lowest_test_loss)
-  print(f"The best model has a test running loss of {Lowest_test_loss} and is model nr. {Lowest_test_loss_index + 1}")
+  print(f"The best model has a test running loss of {Lowest_test_loss} and is model nr. {Lowest_test_loss_index}")
 
   Best_Model = Model_path[Lowest_test_loss_index]
 
