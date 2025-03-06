@@ -1,7 +1,8 @@
 import random
 import matplotlib.pyplot as plt
-from debug_func import debug_L12, debug_L3, debug_L4, debug_L5, debug_L6
 
+from debug_func import debug_L12, debug_L3, debug_L4, debug_L5, debug_L6
+from help_func import self_feeding, enc_self_feeding
 
 def plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
     # Set font sizes
