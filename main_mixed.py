@@ -9,7 +9,7 @@ import time
 
 from help_func import self_feeding, enc_self_feeding
 from nn_structure import AUTOENCODER
-from training import trainingfcn
+from training import trainingfcn_mixed
 from data_generation import DataGenerator_mixed
 from debug_func import debug_L12, debug_L3, debug_L4, debug_L5, debug_L6
 
