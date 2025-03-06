@@ -63,7 +63,7 @@ S_p = 30
 T = len(train_tensor_unforced[0, :, :])
 alpha = [0.1, 10e-7, 10e-15]
 W = 0
-M = 1 # Amount of models you want to run
+M = 2 # Amount of models you want to run
 
 [Lowest_loss, Lowest_test_loss, Best_Model] = trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor_unforced, train_tensor_forced, test_tensor, M)
 
