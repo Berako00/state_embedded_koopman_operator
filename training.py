@@ -61,8 +61,6 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
               loss_list.append(avg_loss)
               running_loss_list.append(running_loss)
               print(f'Epoch {e+1}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
-              current_lr = optimizer.param_groups[0]['lr']
-              print(f'Current learning rate: {current_lr:.8f}')
 
               # Save the model parameters at the end of each epoch
               torch.save(model.state_dict(), model_path_i)
@@ -193,8 +191,6 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
           loss_list.append(avg_loss)
           running_loss_list.append(running_loss)
           print(f'Variable Input, Model: {c_m}, Epoch {e+1}, Running loss: {running_loss:.3e}')
-          current_lr = optimizer.param_groups[0]['lr']
-          print(f'Current learning rate: {current_lr:.8f}')
 
           # Save the model parameters at the end of each epoch
           torch.save(model.state_dict(), model_path_i)
