@@ -3,6 +3,20 @@ import torch.nn.functional as F
 
 from loss_func import custom_loss
 
+def get_model_path(i):
+    path1 = f"/home/trarity/master/koopman_control/data/Autoencoder_model_params{i}.pth"
+    path2 = f"C:/Users/jokin/Desktop/Uni/Aalborg/Master/Masters_Thesis/Path/Autoencoder_model_params{i}.pth"
+    path3 = f"/content/drive/My Drive/Colab Notebooks/Autoencoder_model_params{i}.pth"
+    path4 = f"/content/drive/MyDrive/Colab Notebooks/Autoencoder_model_params{i}.pth"
+    if os.path.exists(path1):
+        return path1
+    elif os.path.exists(path2):
+        return path2
+    elif os.path.exists(path3):
+        return path3
+    else:
+        return path4
+
 def set_requires_grad(layers, requires_grad):
     for param in layers:
         param.requires_grad = requires_grad
