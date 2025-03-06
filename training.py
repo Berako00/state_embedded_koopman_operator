@@ -80,7 +80,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
         running_loss += loss.item()
 
       avg_loss = running_loss / len(test_loader)
-      print(f'Test Data w/Model {c_m + 1}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
+      print(f'Test Data w/Model {c_m}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
       Test_loss_list.append(running_loss)
       c_m += 1
 
@@ -203,7 +203,7 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
         running_loss += loss.item()
 
       avg_loss = running_loss / len(test_loader)
-      print(f'Test Data w/Model {c_m + 1}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
+      print(f'Test Data w/Model {c_m}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
       Test_loss_list.append(running_loss)
       c_m += 1
 
