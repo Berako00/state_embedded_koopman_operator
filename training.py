@@ -60,7 +60,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
               avg_loss = running_loss / len(train_loader)
               loss_list.append(avg_loss)
               running_loss_list.append(running_loss)
-              print(f'Epoch {e+1}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
+              print(f'Model: {c_m}, Epoch: {e+1}, Running loss: {running_loss:.3e}')
 
               # Save the model parameters at the end of each epoch
               torch.save(model.state_dict(), model_path_i)
