@@ -129,7 +129,6 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
       running_loss_list = []
       nan_found = False  # Flag to detect NaNs
 
-      print(f"Training unforced system dynamics, for Model: {c_m}")
       #First train the unforced system so do not compute
       set_requires_grad(list(model.u_Encoder_In.parameters()) +
                         list(model.u_Encoder_Hidden.parameters()) +
@@ -157,15 +156,13 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
           avg_loss = running_loss / len(train_unforced_loader)
           loss_list.append(avg_loss)
           running_loss_list.append(running_loss)
-          print(f'Epoch {e+1}, Model: {c_m}, Running loss: {running_loss:.3e}')
+          print(f'Input: 0, Model: {c_m}, Epoch {e+1}, Running loss: {running_loss:.3e}')
           current_lr = optimizer.param_groups[0]['lr']
           print(f'Current learning rate: {current_lr:.8f}')
 
           # Save the model parameters at the end of each epoch
           torch.save(model.state_dict(), model_path_i)
 
-
-      print(f"Training input influence on dynamics, for Model: {c_m}")
       set_requires_grad(model.parameters(), requires_grad=False) # Set all parames to not train
       #Enable training of forced system
       set_requires_grad(list(model.u_Encoder_In.parameters()) +
@@ -195,7 +192,7 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
           avg_loss = running_loss / len(train_forced_loader)
           loss_list.append(avg_loss)
           running_loss_list.append(running_loss)
-          print(f'Epoch {e+1}, Model: {c_m}, Running loss: {running_loss:.3e}')
+          print(f'Variable Input, Model: {c_m}, Epoch {e+1}, Running loss: {running_loss:.3e}')
           current_lr = optimizer.param_groups[0]['lr']
           print(f'Current learning rate: {current_lr:.8f}')
 
