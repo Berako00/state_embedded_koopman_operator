@@ -109,11 +109,11 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
 
       #First train the unforced system so do not compute
       set_requires_grad(list(model.u_Encoder_In.parameters()) +
-                        list(model.u_Encoder_Hidden.parameters()) +
+                        list(model.u_encoder_hidden.parameters()) +
                         list(model.u_Encoder_out.parameters()) +
                         list(model.u_Koopman.parameters()) +
                         list(model.u_Decoder_In.parameters()) +
-                        list(model.u_Decoder_Hidden.parameters()) +
+                        list(model.u_decoder_hidden.parameters()) +
                         list(model.u_Decoder_out.parameters()), requires_grad=False)
 
       optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
@@ -142,11 +142,11 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
       set_requires_grad(model.parameters(), requires_grad=False) # Set all parames to not train
       #Enable training of forced system
       set_requires_grad(list(model.u_Encoder_In.parameters()) +
-                        list(model.u_Encoder_Hidden.parameters()) +
+                        list(model.u_encoder_hidden.parameters()) +
                         list(model.u_Encoder_out.parameters()) +
                         list(model.u_Koopman.parameters()) +
                         list(model.u_Decoder_In.parameters()) +
-                        list(model.u_Decoder_Hidden.parameters()) +
+                        list(model.u_decoder_hidden.parameters()) +
                         list(model.u_Decoder_out.parameters()), requires_grad=True)
 
 
