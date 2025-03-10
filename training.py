@@ -21,7 +21,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
 
   Models_loss_list = torch.zeros(M)
   c_m = 0
-  check_epoch = 10
+  check_epoch = 3
 
   Model_path = [get_model_path(i) for i in range(M)]
   Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array = [torch.zeros(M, eps) for _ in range(7)]
@@ -134,7 +134,7 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
    L5_forced_Array, L6_forced_Array] = [torch.zeros(M, eps) for _ in range(11)]
 
   c_m = 0
-  check_epoch = 10
+  check_epoch = 3
 
   Model_path = [get_model_path(i) for i in range(M)]
 
