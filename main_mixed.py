@@ -32,11 +32,11 @@ seed = 1
 
 [train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, val_tensor] = DataGenerator_mixed(x1range, x2range, numICs, mu, lam, T_step, dt)
 
-print(f"Train tensor for unforced system shape: {train_tensor_unforced.shape}")       # Expected: [10000, 101, 3]
-print(f"Train tensor with force shape: {train_tensor_forced.shape}")       # Expected: [10000, 101, 3]
-print(f"Test tensor for unforced system shape: {test_tensor_unforced.shape}")       # Expected: [2500, 101, 3]
-print(f"Test tensor with force shape: {test_tensor_forced.shape}")       # Expected: [2500, 101, 3]
-print(f"Validation tensor shape: {val_tensor.shape}")     # Expected: [5000, 101, 3]
+print(f"Train tensor for unforced system shape: {train_tensor_unforced.shape}")
+print(f"Train tensor with force shape: {train_tensor_forced.shape}")
+print(f"Test tensor for unforced system shape: {test_tensor_unforced.shape}")
+print(f"Test tensor with force shape: {test_tensor_forced.shape}")
+print(f"Validation tensor shape: {val_tensor.shape}")
 
 # NN Structure
 
@@ -92,5 +92,5 @@ print(f"Total training time is: {total_training_time}")
 
 plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array, 
                       L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array, Lowest_loss_index)
-plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
-plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
+plot_debug(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
+plot_results(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
