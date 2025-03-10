@@ -34,7 +34,8 @@ seed = 1
 
 print(f"Train tensor for unforced system shape: {train_tensor_unforced.shape}")       # Expected: [10000, 101, 3]
 print(f"Train tensor with force shape: {train_tensor_forced.shape}")       # Expected: [10000, 101, 3]
-print(f"Test tensor shape: {test_tensor.shape}")          # Expected: [5000, 101, 3]
+print(f"Test tensor for unforced system shape: {test_tensor_unforced.shape}")       # Expected: [2500, 101, 3]
+print(f"Test tensor with force shape: {test_tensor_forced.shape}")       # Expected: [2500, 101, 3]
 print(f"Validation tensor shape: {val_tensor.shape}")     # Expected: [5000, 101, 3]
 
 # NN Structure
