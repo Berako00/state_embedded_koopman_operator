@@ -65,7 +65,7 @@ def total_loss(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
 
     L_total = alpha[0]*(L_gx + L_gu) +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
 
-    return L_total
+    return L_total, L_gx, L_gu, L_3, L_4, L_5, L_6
 
 # Loss functions for mixed training:
 
@@ -113,7 +113,7 @@ def total_loss_unforced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
 
     L_total = alpha[0]*(L_gx) +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
 
-    return L_total
+    return L_total, L_gx, L_3, L_4, L_5, L_6
     
 def total_loss_forced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
 
@@ -125,4 +125,4 @@ def total_loss_forced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
 
     L_total = alpha[0]* L_gu +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
 
-    return L_total
+    return L_total, L_gu, L_3, L_4, L_5, L_6
