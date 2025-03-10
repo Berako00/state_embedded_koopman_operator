@@ -12,7 +12,7 @@ from nn_structure import AUTOENCODER
 from training import trainingfcn_mixed
 from data_generation import DataGenerator_mixed
 from debug_func import debug_L12, debug_L3, debug_L4, debug_L5, debug_L6
-from plotting import plot_results, plot_losses, plot_debug
+from plotting import plot_results, plot_losses_mixed, plot_debug
 
 # Set device to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -57,7 +57,7 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
 # Training Loop
 start_training_time = time.time()
 
-eps = 5 # Number of epochs per batch size
+eps = 9 # Number of epochs per batch size
 lr = 1e-3 # Learning rate
 batch_size = 256
 S_p = 30
