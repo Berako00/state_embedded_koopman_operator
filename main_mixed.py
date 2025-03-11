@@ -43,7 +43,7 @@ print(f"Validation tensor shape: {val_tensor.shape}")
 Num_meas = 2
 Num_inputs = 1
 Num_x_Obsv = 3
-Num_u_Obsv = 3
+Num_u_Obsv = 2
 Num_x_Neurons = 30
 Num_u_Neurons = 30
 Num_hidden_x_encoder = 2
