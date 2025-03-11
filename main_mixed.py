@@ -21,7 +21,7 @@ print("Using device:", device)
 start_time = time.time()
 # Data Generation
 
-numICs = 10000
+numICs = 20000
 x1range = (-0.5, 0.5)
 x2range = x1range
 T_step = 50
@@ -57,7 +57,7 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
 # Training Loop
 start_training_time = time.time()
 
-eps = 1500 # Number of epochs per batch size
+eps = 2 # Number of epochs per batch size
 lr = 1e-3 # Learning rate
 batch_size = 256
 S_p = 30
