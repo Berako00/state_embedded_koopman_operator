@@ -73,7 +73,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
               test_running_loss = 0.0
               for (batch_x,) in test_loader:
                   batch_x = batch_x.to(device, non_blocking=True)
-                  _, loss = enc_self_feeding_uf(model, batch_x, Num_meas)
+                  _, loss = enc_self_feeding(model, batch_x, Num_meas)
                   test_running_loss += loss.item()
               print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
 
@@ -196,7 +196,7 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
               test_running_loss = 0.0
               for (batch_x,) in test_unforced_loader:
                   batch_x = batch_x.to(device, non_blocking=True)
-                  _, loss = enc_self_feeding(model, batch_x, Num_meas)
+                  _, loss = enc_self_feeding_uf(model, batch_x, Num_meas)
                   test_running_loss += loss.item()
               print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
 
