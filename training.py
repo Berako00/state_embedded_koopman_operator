@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
 import os
 
-from help_func import self_feeding, enc_self_feeding, set_requires_grad, get_model_path
+from help_func import self_feeding, enc_self_feeding, set_requires_grad, get_model_path, enc_self_feeding_uf
 from loss_func import total_loss, total_loss_forced, total_loss_unforced
 from nn_structure import AUTOENCODER
 
@@ -73,7 +73,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
               test_running_loss = 0.0
               for (batch_x,) in test_loader:
                   batch_x = batch_x.to(device, non_blocking=True)
-                  _, loss = enc_self_feeding(model, batch_x, Num_meas)
+                  _, loss = enc_self_feeding_uf(model, batch_x, Num_meas)
                   test_running_loss += loss.item()
               print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
 
