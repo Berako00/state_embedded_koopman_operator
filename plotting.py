@@ -1,4 +1,6 @@
 import random
+import matplotlib
+matplotlib.use("TkAgg")  # Enables interactive plotting
 import matplotlib.pyplot as plt
 
 from debug_func import debug_L12, debug_L3, debug_L4, debug_L5, debug_L6
