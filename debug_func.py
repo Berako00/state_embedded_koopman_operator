@@ -61,6 +61,7 @@ def debug_L6(xuk, Num_meas, Num_x_Obsv, T, model):
         prediction[:, m+1, :] = y_k
 
     return actual, prediction
+  
     
 def debug_L12_uf(xuk, encoder, decoder):
     actual = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2], dtype=torch.float32)
@@ -114,3 +115,4 @@ def debug_L6_uf(xuk, Num_meas, Num_x_Obsv, T, model):
         prediction[:, m+1, :] = y_k
 
     return actual, prediction
+
