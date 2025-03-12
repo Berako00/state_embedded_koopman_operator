@@ -78,7 +78,7 @@ M = 1 # Amount of models you want to run
                                                                         train_tensor_unforced, train_tensor_forced, test_tensor_unforced, 
                                                                         test_tensor_forced, M)
 # Load the parameters of the best model
-model.load_state_dict(torch.load(Best_Model, weights_only=True))
+model.load_state_dict(torch.load(Best_Model, map_location=device, weights_only=True))
 print(f"Loaded model parameters from Model: {Best_Model}")
 
 end_time =  time.time()
