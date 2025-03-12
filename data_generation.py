@@ -76,15 +76,18 @@ def DataGenerator_mixed(x1range, x2range, numICs, mu, lam, T, dt):
 
     # Create test, validation, and training tensors with different percentages of numICs
     seed = 1
-    test_tensor = generate_data(x1range, x2range, round(0.1 * numICs), mu, lam, T, dt, seed)
+    test_tensor_unforced = generate_data_unforced(x1range, x2range, round(0.05 * numICs), mu, lam, T, dt, seed)
 
     seed = 2
-    val_tensor = generate_data(x1range, x2range, round(0.1 * numICs), mu, lam, T, dt, seed)
+    test_tensor_forced = generate_data(x1range, x2range, round(0.05 * numICs), mu, lam, T, dt, seed)
 
     seed = 3
-    train_tensor_unforced = generate_data_unforced(x1range, x2range, round(0.4 * numICs), mu, lam, T, dt, seed)
+    val_tensor = generate_data(x1range, x2range, round(0.1 * numICs), mu, lam, T, dt, seed)
 
     seed = 4
+    train_tensor_unforced = generate_data_unforced(x1range, x2range, round(0.4 * numICs), mu, lam, T, dt, seed)
+
+    seed = 5
     train_tensor_forced = generate_data(x1range, x2range, round(0.4 * numICs), mu, lam, T, dt, seed)
 
-    return train_tensor_unforced, train_tensor_forced, test_tensor, val_tensor
+    return train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, val_tensor

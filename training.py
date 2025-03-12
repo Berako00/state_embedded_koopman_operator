@@ -3,109 +3,155 @@ from torch.utils.data import DataLoader, TensorDataset
 import torch.optim as optim
 import os
 
-from help_func import self_feeding, enc_self_feeding, set_requires_grad, get_model_path
+from help_func import self_feeding, enc_self_feeding, set_requires_grad, get_model_path, enc_self_feeding_uf
 from loss_func import total_loss, total_loss_forced, total_loss_unforced
 from nn_structure import AUTOENCODER
 
+def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
 
-def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M):
+  if device is None:
+      device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+  pin_memory = True if device.type == "cuda" else False
 
   train_dataset = TensorDataset(train_tensor)
-  train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-
+  train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, pin_memory=pin_memory)
   test_dataset = TensorDataset(test_tensor)
-  test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+  test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, pin_memory=pin_memory)
 
-  Model_path = []
-  Models_loss_list = []
-  Test_loss_list = []
-  Running_Losses_Array = []
+  Models_loss_list = torch.zeros(M)
   c_m = 0
+  check_epoch = 10
 
   Model_path = [get_model_path(i) for i in range(M)]
+  Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array = [torch.zeros(M, eps) for _ in range(7)]
 
-  for model_path_i in Model_path:
-     
-      model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
+  for c_m in range(M):
+      model_path_i = Model_path[c_m]
+      model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv,
+                          Num_x_Neurons, Num_u_Obsv, Num_u_Neurons,
+                          Num_hidden_x_encoder, Num_hidden_x_decoder,
+                          Num_hidden_u_encoder, Num_hidden_u_decoder).to(device)
       optimizer = optim.Adam(model.parameters(), lr=lr)
-      loss_list = []
-      running_loss_list = []
-      nan_found = False  # Flag to detect NaNs
+      best_test_loss_checkpoint = float('inf')
+
+      running_loss_list, Lgx_list, Lgu_list, L3_list, L4_list, L5_list, L6_list = [torch.zeros(eps) for _ in range(7)]
 
       for e in range(eps):
-          running_loss = 0.0
-          for (batch_x,) in train_loader:
-              optimizer.zero_grad()
-              loss = total_loss(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
+          model.train()
+          running_loss, running_Lgx, running_Lgu, running_L3, running_L4, running_L5, running_L6 = [0.0] * 7
 
+          for (batch_x,) in train_loader:
+              batch_x = batch_x.to(device, non_blocking=True)
+              optimizer.zero_grad()
+              [loss, L_gx, L_gu, L_3, L_4, L_5, L_6] = total_loss(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
               loss.backward()
               optimizer.step()
               running_loss += loss.item()
+              running_Lgx += L_gx.item()
+              running_Lgu += L_gu.item()
+              running_L3 += L_3.item()
+              running_L4 += L_4.item()
+              running_L5 += L_5.item()
+              running_L6 += L_6.item()
+
               torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
 
-          avg_loss = running_loss / len(train_loader)
-          loss_list.append(avg_loss)
-          running_loss_list.append(running_loss)
-          print(f'Model: {c_m}, Epoch: {e+1}, Running loss: {running_loss:.3e}')
+          running_loss_list[e] = running_loss
+          Lgx_list[e] = running_Lgx
+          Lgu_list[e] = running_Lgu
+          L3_list[e] = running_L3
+          L4_list[e] = running_L4
+          L5_list[e] = running_L5
+          L6_list[e] = running_L6
 
-          # Save the model parameters at the end of each epoch
-          torch.save(model.state_dict(), model_path_i)
+          print(f'Model: {c_m}, Epoch: {e+1}, Training Running Loss: {running_loss:.3e}')
 
-      Models_loss_list.append(running_loss)
-      Running_Losses_Array.append(running_loss_list)
-      torch.save(model.state_dict(), model_path_i)
+          # Every 20 epochs, evaluate on the test set and checkpoint if improved.
+          if (e + 1) % check_epoch == 0:
+              model.eval()
+              test_running_loss = 0.0
+              for (batch_x,) in test_loader:
+                  batch_x = batch_x.to(device, non_blocking=True)
+                  _, loss = enc_self_feeding(model, batch_x, Num_meas)
+                  test_running_loss += loss.item()
+              print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
 
-      for (batch_x,) in test_loader:
-        [traj_prediction, loss] = enc_self_feeding(model, batch_x, Num_meas)
-        running_loss += loss.item()
+              # If test loss is lower than the one from the previous checkpoint, save the model.
+              if test_running_loss < best_test_loss_checkpoint:
+                  best_test_loss_checkpoint = test_running_loss
+                  torch.save(model.state_dict(), model_path_i)
+                  print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
 
-      avg_loss = running_loss / len(test_loader)
-      print(f'Test Data w/Model {c_m}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
-      Test_loss_list.append(running_loss)
-      c_m += 1
+      model.load_state_dict(torch.load(model_path_i, map_location=device, weights_only=True))
+
+      Models_loss_list[c_m] = best_test_loss_checkpoint
+      Running_Losses_Array[c_m, :] = running_loss_list
+      Lgx_Array[c_m, :] = Lgx_list
+      Lgu_Array[c_m, :] = Lgu_list
+      L3_Array[c_m, :] = L3_list
+      L4_Array[c_m, :] = L4_list
+      L5_Array[c_m, :] = L5_list
+      L6_Array[c_m, :] = L6_list
 
   # Find the best of the models
-  Lowest_loss = min(Models_loss_list)
-  Lowest_test_loss = min(Test_loss_list)
+  Lowest_loss = Models_loss_list.min().item()
 
-  Lowest_loss_index = Models_loss_list.index(Lowest_loss)
+  Lowest_loss_index = int((Models_loss_list == Models_loss_list.min()).nonzero(as_tuple=False)[0].item())
   print(f"The best model has a running loss of {Lowest_loss} and is model nr. {Lowest_loss_index}")
 
-  Lowest_test_loss_index = Test_loss_list.index(Lowest_test_loss)
-  print(f"The best model has a test running loss of {Lowest_test_loss} and is model nr. {Lowest_test_loss_index}")
+  Best_Model = Model_path[Lowest_loss_index]
 
-  Best_Model = Model_path[Lowest_test_loss_index]
+  return (Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array)
 
-  return Lowest_loss, Lowest_test_loss, Best_Model
+def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv,
+                      Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder,
+                      Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor_unforced, train_tensor_forced, 
+                      test_tensor_unforced, test_tensor_forced, M, device=None):
 
-# Mixed training function:
+  if device is None:
+      device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor_unforced, train_tensor_forced, test_tensor, M):
+  pin_memory = True if device.type == "cuda" else False
 
   train_unforced_dataset = TensorDataset(train_tensor_unforced)
-  train_unforced_loader = DataLoader(train_unforced_dataset, batch_size=batch_size, shuffle=True)
+  train_unforced_loader = DataLoader(train_unforced_dataset, batch_size=batch_size, shuffle=True, pin_memory=pin_memory)
 
   train_forced_dataset = TensorDataset(train_tensor_forced)
-  train_forced_loader = DataLoader(train_forced_dataset, batch_size=batch_size, shuffle=True)
+  train_forced_loader = DataLoader(train_forced_dataset, batch_size=batch_size, shuffle=True, pin_memory=pin_memory)
 
-  test_dataset = TensorDataset(test_tensor)
-  test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+  test_unforced_dataset = TensorDataset(test_tensor_unforced)
+  test_unforced_loader = DataLoader(test_unforced_dataset, batch_size=batch_size, shuffle=True, pin_memory=pin_memory)
 
-  Model_path = []
-  Models_loss_list = []
-  Test_loss_list = []
-  Running_Losses_Array = []
+  test_forced_dataset = TensorDataset(test_tensor_forced)
+  test_forced_loader = DataLoader(test_forced_dataset, batch_size=batch_size, shuffle=True, pin_memory=pin_memory)
+
+  Models_loss_list = torch.zeros(M)
+  [Running_Losses_Array, Lgx_unforced_Array, Lgu_forced_Array, 
+   L3_unforced_Array, L4_unforced_Array, 
+   L3_forced_Array, L4_forced_Array,
+   L5_unforced_Array, L6_unforced_Array,
+   L5_forced_Array, L6_forced_Array] = [torch.zeros(M, eps) for _ in range(11)]
+
   c_m = 0
+  check_epoch = 10
 
   Model_path = [get_model_path(i) for i in range(M)]
 
-  for model_path_i in Model_path:
+  for c_m in range(M):
 
-      # Instantiate the model and optimizer afresh
-      model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
-      loss_list = []
-      running_loss_list = []
-      nan_found = False  # Flag to detect NaNs
+      model_path_i = Model_path[c_m]
+      model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv,
+                          Num_x_Neurons, Num_u_Obsv, Num_u_Neurons,
+                          Num_hidden_x_encoder, Num_hidden_x_decoder,
+                          Num_hidden_u_encoder, Num_hidden_u_decoder).to(device)
+
+      optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
+      best_test_loss_checkpoint = float('inf')
+
+      [running_loss_list, Lgx_unforced_list, Lgu_forced_list, 
+       L3_unforced_list, L4_unforced_list, L3_forced_list, L4_forced_list, 
+       L5_unforced_list, L6_unforced_list, L5_forced_list, L6_forced_list] = [torch.zeros(eps) for _ in range(11)]
 
       #First train the unforced system so do not compute
       set_requires_grad(list(model.u_Encoder_In.parameters()) +
@@ -116,28 +162,51 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
                         list(model.u_decoder_hidden.parameters()) +
                         list(model.u_Decoder_out.parameters()), requires_grad=False)
 
-      optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
-
       for e in range(eps):
-          running_loss = 0.0
+          model.train()          
+          running_loss, running_Lgx, running_Lgu, running_L3, running_L4, running_L5, running_L6 = [0.0] * 7
+
           for (batch_x,) in train_unforced_loader:
-
+              batch_x = batch_x.to(device, non_blocking=True)
               optimizer.zero_grad()
-              loss = total_loss_unforced(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
-
+              [loss, L_gx, L_3, L_4, L_5, L_6] = total_loss_unforced(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
+              
               loss.backward()
               optimizer.step()
               running_loss += loss.item()
+              running_Lgx += L_gx.item()
+              running_L3 += L_3.item()
+              running_L4 += L_4.item()
+              running_L5 += L_5.item()
+              running_L6 += L_6.item()
+
               torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
 
+          running_loss_list[e] = running_loss # This one may be deleted
+          Lgx_unforced_list[e] = running_Lgx
+          L3_unforced_list[e] = running_L3
+          L4_unforced_list[e] = running_L4
+          L5_unforced_list[e] = running_L5
+          L6_unforced_list[e] = running_L6
 
-          avg_loss = running_loss / len(train_unforced_loader)
-          loss_list.append(avg_loss)
-          running_loss_list.append(running_loss)
           print(f'Input: 0, Model: {c_m}, Epoch {e+1}, Running loss: {running_loss:.3e}')
 
-          # Save the model parameters at the end of each epoch
-          torch.save(model.state_dict(), model_path_i)
+          if (e + 1) % check_epoch == 0:
+              model.eval()
+              test_running_loss = 0.0
+              for (batch_x,) in test_unforced_loader:
+                  batch_x = batch_x.to(device, non_blocking=True)
+                  _, loss = enc_self_feeding_uf(model, batch_x, Num_meas)
+                  test_running_loss += loss.item()
+              print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
+
+              # If test loss is lower than the one from the previous checkpoint, save the model.
+              if test_running_loss < best_test_loss_checkpoint:
+                  best_test_loss_checkpoint = test_running_loss
+                  torch.save(model.state_dict(), model_path_i)
+                  print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
+
+      model.load_state_dict(torch.load(model_path_i, map_location=device, weights_only=True))
 
       set_requires_grad(model.parameters(), requires_grad=False) # Set all parames to not train
       #Enable training of forced system
@@ -152,51 +221,78 @@ def trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, 
 
       optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
-      for e in range(eps):
-          running_loss = 0.0
-          for (batch_x,) in train_forced_loader:
+      best_test_loss_checkpoint = float('inf')
 
+      for e in range(eps):
+          model.train()
+          running_loss, running_Lgx, running_Lgu, running_L3, running_L4, running_L5, running_L6 = [0.0] * 7
+
+          for (batch_x,) in train_forced_loader:
+              batch_x = batch_x.to(device, non_blocking=True)
               optimizer.zero_grad()
-              loss = total_loss_forced(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
+              [loss, L_gu, L_3, L_4, L_5, L_6] = total_loss_forced(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
 
               loss.backward()
               optimizer.step()
               running_loss += loss.item()
+              running_Lgu += L_gu.item()
+              running_L3 += L_3.item()
+              running_L4 += L_4.item()
+              running_L5 += L_5.item()
+              running_L6 += L_6.item()
+
               torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
 
+          running_loss_list[e] = running_loss
+          Lgu_forced_list[e] = running_Lgu
+          L3_forced_list[e] = running_L3
+          L4_forced_list[e] = running_L4
+          L5_forced_list[e] = running_L5
+          L6_forced_list[e] = running_L6
 
-          avg_loss = running_loss / len(train_forced_loader)
-          loss_list.append(avg_loss)
-          running_loss_list.append(running_loss)
           print(f'Variable Input, Model: {c_m}, Epoch {e+1}, Running loss: {running_loss:.3e}')
 
-          # Save the model parameters at the end of each epoch
-          torch.save(model.state_dict(), model_path_i)
+          if (e + 1) % check_epoch == 0:
+              model.eval()
+              test_running_loss = 0.0
+              for (batch_x,) in test_forced_loader:
+                  batch_x = batch_x.to(device, non_blocking=True)
+                  _, loss = enc_self_feeding(model, batch_x, Num_meas)
+                  test_running_loss += loss.item()
+              print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
 
+              # If test loss is lower than the one from the previous checkpoint, save the model.
+              if test_running_loss < best_test_loss_checkpoint:
+                  best_test_loss_checkpoint = test_running_loss
+                  torch.save(model.state_dict(), model_path_i)
+                  print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
 
-      Models_loss_list.append(running_loss)
-      Running_Losses_Array.append(running_loss_list)
-      torch.save(model.state_dict(), model_path_i)
+      model.load_state_dict(torch.load(model_path_i, map_location=device, weights_only=True))
 
-      for (batch_x,) in test_loader:
-        [traj_prediction, loss] = enc_self_feeding(model, batch_x, Num_meas)
-        running_loss += loss.item()
+      Models_loss_list[c_m] = best_test_loss_checkpoint
+      Running_Losses_Array[c_m, :] = running_loss_list
+      Lgx_unforced_Array[c_m, :] = Lgx_unforced_list
+      Lgu_forced_Array[c_m, :] = Lgu_forced_list
 
-      avg_loss = running_loss / len(test_loader)
-      print(f'Test Data w/Model {c_m}, Avg Loss: {avg_loss:.10f}, Running loss: {running_loss:.3e}')
-      Test_loss_list.append(running_loss)
-      c_m += 1
+      L3_unforced_Array[c_m, :] = L3_unforced_list
+      L4_unforced_Array[c_m, :] = L4_unforced_list
+      L5_unforced_Array[c_m, :] = L5_unforced_list
+      L6_unforced_Array[c_m, :] = L6_unforced_list
+
+      L3_forced_Array[c_m, :] = L3_forced_list
+      L4_forced_Array[c_m, :] = L4_forced_list
+      L5_forced_Array[c_m, :] = L5_forced_list
+      L6_forced_Array[c_m, :] = L6_forced_list
 
   # Find the best of the models
-  Lowest_loss = min(Models_loss_list)
-  Lowest_test_loss = min(Test_loss_list)
+  Lowest_loss = Models_loss_list.min().item()
 
-  Lowest_loss_index = Models_loss_list.index(Lowest_loss)
+  Lowest_loss_index = int((Models_loss_list == Models_loss_list.min()).nonzero(as_tuple=False)[0].item())
   print(f"The best model has a running loss of {Lowest_loss} and is model nr. {Lowest_loss_index}")
 
-  Lowest_test_loss_index = Test_loss_list.index(Lowest_test_loss)
-  print(f"The best model has a test running loss of {Lowest_test_loss} and is model nr. {Lowest_test_loss_index}")
+  Best_Model = Model_path[Lowest_loss_index]
 
-  Best_Model = Model_path[Lowest_test_loss_index]
-
-  return Lowest_loss, Lowest_test_loss, Best_Model
+  return (Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, 
+          Running_Losses_Array, Lgx_unforced_Array, Lgu_forced_Array, 
+          L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array,
+          L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array)
