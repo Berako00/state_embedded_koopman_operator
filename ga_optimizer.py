@@ -160,7 +160,7 @@ def run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor
                 loss = -fitness  # Since fitness = -loss
                 print(f"Candidate (best from previous generation): {candidate} | Loss: {loss} (evaluation skipped)")
 
-            else
+            else:
               if training_type == 'normal':
                   loss = evaluate_candidate_normal(candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M)
               elif training_type == 'mixed':
