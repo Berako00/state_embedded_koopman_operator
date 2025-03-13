@@ -12,7 +12,7 @@ from nn_structure import AUTOENCODER
 from training import trainingfcn, trainingfcn_mixed
 from Data_Generation import DataGenerator
 
-from plotting import plot_losses, plot_losses_mixed, plot_debug plot_results
+from plotting import plot_results
 from ga_optimizer import run_genetic_algorithm
 
 # Set device to GPU if available
@@ -141,12 +141,7 @@ print(f"Total training time is: {total_training_time}")
 
 # ----- Result Plotting and Further Analysis -----
 if training_type == 'normal':
-  plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_loss_index)
-  plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
   plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 
 elif training_type == 'mixed':
-  plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array,
-                      L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array, Lowest_loss_index)
-  plot_debug(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
   plot_results(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
