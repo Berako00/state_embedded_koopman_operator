@@ -143,18 +143,32 @@ def run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor
     best_candidate = None
     best_fitness = -float('inf')  # Fitness = -loss, so higher fitness is better
 
+    
     for gen in range(generations):
+        # For generations after the first, store the best candidate from the previous generation
+        if gen > 0:
+            prev_best_candidate = best_candidate
+            prev_best_fitness = best_fitness
+
         print(f"Generation {gen+1}/{generations}")
         fitnesses = []
         # Evaluate fitness for each candidate
         for candidate in population:
-            if training_type == 'normal':
-                loss = evaluate_candidate_normal(candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M)
-            elif training_type == 'mixed':
-                loss = evaluate_candidate_mix(candidate, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, eps, lr, batch_size, S_p, T, M)
-            fitness = -loss  # Lower loss => higher fitness
+           # Skip evaluation if candidate is the best from the previous generation
+            if gen > 0 and candidate == prev_best_candidate:
+                fitness = prev_best_fitness
+                loss = -fitness  # Since fitness = -loss
+                print(f"Candidate (best from previous generation): {candidate} | Loss: {loss} (evaluation skipped)")
+
+            else
+              if training_type == 'normal':
+                  loss = evaluate_candidate_normal(candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M)
+              elif training_type == 'mixed':
+                  loss = evaluate_candidate_mix(candidate, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, eps, lr, batch_size, S_p, T, M)
+              fitness = -loss  # Lower loss => higher fitness
+              print(f"Candidate: {candidate} | Loss: {loss}")
+            
             fitnesses.append(fitness)
-            print(f"Candidate: {candidate} | Loss: {loss}")
             if fitness > best_fitness:
                 best_fitness = fitness
                 best_candidate = candidate
@@ -181,4 +195,5 @@ def run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor
         print(f"Best candidate in generation {gen+1}: {best_candidate} (Loss: {-best_fitness})")
 
     print("Best candidate overall:", best_candidate)
+    return best_candidate
     return best_candidate
