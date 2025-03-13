@@ -12,6 +12,8 @@ from nn_structure import AUTOENCODER
 from training import trainingfcn
 from Data_Generation import DataGenerator
 
+from plotting import plot_losses, plot_losses_mixed, plot_debug plot_results
+
 # Set device to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
@@ -27,20 +29,50 @@ dt = 0.02
 mu = -0.05
 lam = -1
 seed = 1
+# GA parameters
+generations = 1
+pop_size = 1
+eps = 10
+
+# Define training type
+training_type = 'mixed' # 'mixed' or 'normal' training
 
 [train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, mu, lam, T_step, dt)
+
+[train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, val_tensor] = DataGenerator_mixed(x1range, x2range, numICs, mu, lam, T_step, dt)
 
 print(f"Train tensor shape: {train_tensor.shape}")
 print(f"Test tensor shape: {test_tensor.shape}")
 print(f"Validation tensor shape: {val_tensor.shape}")
 
+print(f"Train tensor unforced shape: {train_tensor_unforced.shape}")
+print(f"Test tensor unforced shape: {test_tensor_unforced.shape}")
+print(f"Train tensor forced shape: {train_tensor_forced.shape}")
+print(f"Test tensor forced shape: {test_tensor_forced.shape}")
+
+# Define parameter ranges
+param_ranges = {
+    "Num_meas": (2, 2),
+    "Num_inputs": (1, 1),
+    "Num_x_Obsv": (1, 5),
+    "Num_u_Obsv": (1, 5),
+    "Num_x_Neurons": (10, 50),
+    "Num_u_Neurons": (10, 50),
+    "Num_hidden_x_encoder": (1, 3),
+    "Num_hidden_x_decoder": (1, 3),
+    "Num_hidden_u_encoder": (1, 3),
+    "Num_hidden_u_decoder": (1, 3),
+    "alpha0": (0.01, 1.0),
+    "alpha1": (1e-9, 1e-5),
+    "alpha2": (1e-18, 1e-12)
+}
+
 # --- Genetic Algorithm Hyperparameter Optimization ---
 use_ga = True
 if use_ga:
-    from ga_optimizer import run_genetic_algorithm
     # For speed, use a lower number of epochs for evaluation (eps) and fewer generations/population size.
-    best_params = run_genetic_algorithm(train_tensor, test_tensor, generations=3, pop_size=5, eps=50)
-    
+    best_params = run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1)
+
     Num_meas             = best_params['Num_meas']
     Num_inputs           = best_params['Num_inputs']
     Num_x_Obsv           = best_params['Num_x_Obsv']
@@ -65,16 +97,15 @@ else:
     Num_hidden_u_encoder = 2
     Num_hidden_u_decoder = 2
     alpha                = [0.1, 10e-7, 10e-15]
-
-# --- Instantiate the model using the (possibly optimized) hyperparameters ---
+    
 model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
                     Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder,
                     Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
-                    
+
 # Training Loop Parameters
 start_training_time = time.time()
 
-eps = 500       # Number of epochs for final training
+eps = 50       # Number of epochs for final training
 lr = 1e-3       # Learning rate
 batch_size = 256
 S_p = 30
@@ -82,13 +113,19 @@ T = len(train_tensor[0, :, :])
 W = 0
 M = 1  # Amount of models you want to run
 
-[Lowest_loss, Lowest_test_loss, Best_Model, Lowest_test_loss_index, 
- Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(
-    eps, lr, batch_size, S_p, T, alpha, 
-    Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
-    Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, 
-    Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder,
-    train_tensor, test_tensor, M)
+if training_type == 'normal':
+  [Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None)
+
+elif training_type == 'mixed':
+  [Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index,
+  Running_Losses_Array, Lgx_unforced_Array, Lgu_forced_Array,
+  L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array,
+  L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array] = trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha,
+                                                                          Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
+                                                                          Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder,
+                                                                          Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder,
+                                                                          train_tensor_unforced, train_tensor_forced, test_tensor_unforced,
+                                                                          test_tensor_forced, M)
 
 # Load the parameters of the best model
 model.load_state_dict(torch.load(Best_Model))
@@ -102,4 +139,13 @@ print(f"Total time is: {total_time}")
 print(f"Total training time is: {total_training_time}")
 
 # ----- Result Plotting and Further Analysis -----
-# [Your plotting code remains unchanged below...]
+if training_type == 'normal':
+  plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_loss_index)
+  plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
+  plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
+
+elif training_type == 'mixed':
+  plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array,
+                      L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array, Lowest_loss_index)
+  plot_debug(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
+  plot_results(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
