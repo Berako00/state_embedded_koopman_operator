@@ -9,7 +9,7 @@ import time
 
 from help_func import self_feeding, enc_self_feeding
 from nn_structure import AUTOENCODER
-from training import trainingfcn
+from training import trainingfcn, trainingfcn_mixed
 from Data_Generation import DataGenerator
 
 from plotting import plot_losses, plot_losses_mixed, plot_debug plot_results
