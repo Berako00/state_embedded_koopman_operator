@@ -13,6 +13,7 @@ from training import trainingfcn, trainingfcn_mixed
 from Data_Generation import DataGenerator
 
 from plotting import plot_losses, plot_losses_mixed, plot_debug plot_results
+from ga_optimizer import run_genetic_algorithm
 
 # Set device to GPU if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
