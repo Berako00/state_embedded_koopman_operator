@@ -36,7 +36,7 @@ pop_size = 1
 eps = 10
 
 # Define training type
-training_type = 'mixed' # 'mixed' or 'normal' training
+training_type = 'normal' # 'mixed' or 'normal' training
 
 [train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, mu, lam, T_step, dt)
 
