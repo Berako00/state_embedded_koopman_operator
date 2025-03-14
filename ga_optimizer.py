@@ -11,7 +11,7 @@ def evaluate_candidate_normal(candidate, train_tensor, test_tensor, eps, lr, bat
     alpha = [candidate['alpha0'], candidate['alpha1'], candidate['alpha2']]
     try:
         results = trainingfcn(eps, lr, batch_size, S_p, T, alpha, candidate['Num_meas'], candidate['Num_inputs'], candidate['Num_x_Obsv'], candidate['Num_x_Neurons'], candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
-                                candidate['Num_hidden_x_encoder'], candidate['Num_hidden_x_decoder'], candidate['Num_hidden_u_encoder'], candidate['Num_hidden_u_decoder'], train_tensor, test_tensor, M)
+                                candidate['Num_hidden_x'], candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor, test_tensor, M)
 
         # Use only the lowest_loss (first element) for fitness evaluation
         lowest_loss = results[0]
@@ -28,7 +28,7 @@ def evaluate_candidate_mix(candidate, train_tensor_unforced, train_tensor_forced
     alpha = [candidate['alpha0'], candidate['alpha1'], candidate['alpha2']]
     try:
         results = trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, candidate['Num_meas'], candidate['Num_inputs'], candidate['Num_x_Obsv'], candidate['Num_x_Neurons'], candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
-                                      candidate['Num_hidden_x_encoder'], candidate['Num_hidden_x_decoder'], candidate['Num_hidden_u_encoder'], candidate['Num_hidden_u_decoder'], train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, M)
+                                      candidate['Num_hidden_x'], candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, M)
         # Use only the lowest_loss (first element) for fitness evaluation
         lowest_loss = results[0]
     except Exception as e:
@@ -43,16 +43,14 @@ def initialize_population(pop_size, param_ranges):
     population = []
     for _ in range(pop_size):
         candidate = {
-            "Num_meas": random.randint(*param_ranges["Num_meas"]),
-            "Num_inputs": random.randint(*param_ranges["Num_inputs"]),
+            "Num_meas": Num_meas,
+            "Num_inputs": Num_inputs,
             "Num_x_Obsv": random.randint(*param_ranges["Num_x_Obsv"]),
             "Num_u_Obsv": random.randint(*param_ranges["Num_u_Obsv"]),
             "Num_x_Neurons": random.randint(*param_ranges["Num_x_Neurons"]),
             "Num_u_Neurons": random.randint(*param_ranges["Num_u_Neurons"]),
-            "Num_hidden_x_encoder": random.randint(*param_ranges["Num_hidden_x_encoder"]),
-            "Num_hidden_x_decoder": random.randint(*param_ranges["Num_hidden_x_decoder"]),
-            "Num_hidden_u_encoder": random.randint(*param_ranges["Num_hidden_u_encoder"]),
-            "Num_hidden_u_decoder": random.randint(*param_ranges["Num_hidden_u_decoder"]),
+            "Num_hidden_x": random.randint(*param_ranges["Num_hidden_x"]),  # Shared x hidden layers
+            "Num_hidden_u": random.randint(*param_ranges["Num_hidden_u"]),  # Shared u hidden layers
             "alpha0": random.uniform(*param_ranges["alpha0"]),
             "alpha1": random.uniform(*param_ranges["alpha1"]),
             "alpha2": random.uniform(*param_ranges["alpha2"])
@@ -98,29 +96,21 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
     if random.random() < mutation_rate:
         candidate['Num_u_Neurons'] = max(param_ranges["Num_u_Neurons"][0], min(param_ranges["Num_u_Neurons"][1], candidate['Num_u_Neurons'] + random.choice([-5, 5])))
     if random.random() < mutation_rate:
-        candidate['Num_hidden_x_encoder'] = max(param_ranges["Num_hidden_x_encoder"][0], min(param_ranges["Num_hidden_x_encoder"][1], candidate['Num_hidden_x_encoder'] + random.choice([-1, 1])))
+        candidate['Num_hidden_x'] = max(param_ranges["Num_hidden_x"][0], min(param_ranges["Num_hidden_x"][1], candidate['Num_hidden_x'] + random.choice([-1, 1])))
     if random.random() < mutation_rate:
-        candidate['Num_hidden_x_decoder'] = max(param_ranges["Num_hidden_x_decoder"][0], min(param_ranges["Num_hidden_x_decoder"][1], candidate['Num_hidden_x_decoder'] + random.choice([-1, 1])))
+        candidate['Num_hidden_u'] = max(param_ranges["Num_hidden_u"][0], min(param_ranges["Num_hidden_u"][1], candidate['Num_hidden_u'] + random.choice([-1, 1])))
     if random.random() < mutation_rate:
-        candidate['Num_hidden_u_encoder'] = max(param_ranges["Num_hidden_u_encoder"][0], min(param_ranges["Num_hidden_u_encoder"][1], candidate['Num_hidden_u_encoder'] + random.choice([-1, 1])))
-    if random.random() < mutation_rate:
-        candidate['Num_hidden_u_decoder'] = max(param_ranges["Num_hidden_u_decoder"][0], min(param_ranges["Num_hidden_u_decoder"][1], candidate['Num_hidden_u_decoder'] + random.choice([-1, 1])))
-    if random.random() < mutation_rate:
-        # Logarithmic mutation for alpha0
         new_alpha0 = candidate['alpha0'] * (10 ** random.gauss(0, 0.1))
         candidate['alpha0'] = max(param_ranges["alpha0"][0], min(param_ranges["alpha0"][1], new_alpha0))
     if random.random() < mutation_rate:
-        # Logarithmic mutation for alpha1
         new_alpha1 = candidate['alpha1'] * (10 ** random.gauss(0, 0.1))
         candidate['alpha1'] = max(param_ranges["alpha1"][0], min(param_ranges["alpha1"][1], new_alpha1))
     if random.random() < mutation_rate:
-        # Logarithmic mutation for alpha2
         new_alpha2 = candidate['alpha2'] * (10 ** random.gauss(0, 0.1))
         candidate['alpha2'] = max(param_ranges["alpha2"][0], min(param_ranges["alpha2"][1], new_alpha2))
-
     return candidate
 
-def run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1):
+def run_genetic_algorithm(Num_meas, Num_imputs, training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1):
     """
     Runs the genetic algorithm over a number of generations and returns the best candidate.
 
@@ -138,7 +128,7 @@ def run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor
         raise ValueError("Parameter ranges must be provided.")
 
     T = train_tensor.shape[1]  # Assuming shape: (num_samples, T, features)
-    population = initialize_population(pop_size, param_ranges)
+    population = initialize_population(pop_size, param_ranges, Num_meas, Num_inputs)
 
     best_candidate = None
     best_fitness = -float('inf')  # Fitness = -loss, so higher fitness is better
@@ -195,5 +185,4 @@ def run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor
         print(f"Best candidate in generation {gen+1}: {best_candidate} (Loss: {-best_fitness})")
 
     print("Best candidate overall:", best_candidate)
-    return best_candidate
     return best_candidate
