@@ -10,7 +10,7 @@ import time
 from help_func import self_feeding, enc_self_feeding
 from nn_structure import AUTOENCODER
 from training import trainingfcn, trainingfcn_mixed
-from data_generation import DataGenerator
+from data_generation import DataGenerator, DataGenerator_mixed
 
 from plotting import plot_results
 from ga_optimizer import run_genetic_algorithm
