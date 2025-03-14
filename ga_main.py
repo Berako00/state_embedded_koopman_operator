@@ -123,7 +123,7 @@ elif training_type == 'mixed':
                                                                           test_tensor_forced, M)
 
 # Load the parameters of the best model
-model.load_state_dict(torch.load(Best_Model))
+model.load_state_dict(torch.load(Best_Model, map_location=device, weights_only=True))
 print(f"Loaded model parameters from Model: {Best_Model}")
 
 end_time = time.time()
