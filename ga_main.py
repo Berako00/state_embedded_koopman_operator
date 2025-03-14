@@ -30,10 +30,11 @@ dt = 0.02
 mu = -0.05
 lam = -1
 seed = 1
-# GA parameters
 generations = 1
 pop_size = 1
 eps = 10
+Num_meas = 2
+Num_inputs = 1
 
 # Define training type
 training_type = 'normal' # 'mixed' or 'normal' training
@@ -82,18 +83,16 @@ if use_ga:
     alpha         = [best_params['alpha0'], best_params['alpha1'], best_params['alpha2']]
 else:
     # Default hyperparameters
-    Num_meas             = 2
-    Num_inputs           = 1
-    Num_x_Obsv           = 3
-    Num_u_Obsv           = 2
-    Num_x_Neurons        = 30
-    Num_u_Neurons        = 30
-    Num_hidden_x_encoder = 2
-    Num_hidden_x_decoder = 2
-    Num_hidden_u_encoder = 2
-    Num_hidden_u_decoder = 2
-    alpha                = [0.1, 10e-7, 10e-15]
-    
+    Num_meas      = 2
+    Num_inputs    = 1
+    Num_x_Obsv    = 3
+    Num_u_Obsv    = 2
+    Num_x_Neurons = 30
+    Num_u_Neurons = 30
+    Num_hidden_x  = 2
+    Num_hidden_u  = 2
+    alpha         = [0.1, 10e-7, 10e-15]
+
 model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
                     Num_u_Obsv, Num_u_Neurons, Num_hidden_x,
                     Num_hidden_x, Num_hidden_u, Num_hidden_u)
@@ -101,7 +100,7 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
 # Training Loop Parameters
 start_training_time = time.time()
 
-eps = 50       # Number of epochs for final training
+eps = 10       # Number of epochs for final training
 lr = 1e-3       # Learning rate
 batch_size = 256
 S_p = 30
