@@ -110,7 +110,7 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
         candidate['alpha2'] = max(param_ranges["alpha2"][0], min(param_ranges["alpha2"][1], new_alpha2))
     return candidate
 
-def run_genetic_algorithm(Num_meas, Num_imputs, training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1):
+def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1):
     """
     Runs the genetic algorithm over a number of generations and returns the best candidate.
 
