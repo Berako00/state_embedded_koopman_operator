@@ -30,9 +30,9 @@ dt = 0.02
 mu = -0.05
 lam = -1
 seed = 1
-generations = 3
-pop_size = 2
-eps = 10
+generations = 5
+pop_size = 10
+eps = 500
 patience = 5
 Num_meas = 2
 Num_inputs = 1
@@ -101,7 +101,7 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
 # Training Loop Parameters
 start_training_time = time.time()
 
-eps = 10       # Number of epochs for final training
+eps = 5000       # Number of epochs for final training
 lr = 1e-3       # Learning rate
 batch_size = 256
 S_p = 30
