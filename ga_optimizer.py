@@ -134,7 +134,7 @@ def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, tes
 
     best_candidate = None
     best_fitness = -float('inf')  # Fitness = -loss, so higher fitness is better
-
+    stagnation_counter = 0  # Counts generations without improvement
 
     for gen in range(generations):
         # For generations after the first, store the best candidate from the previous generation
