@@ -64,6 +64,7 @@ def tournament_selection(population, fitnesses, tournament_size=3):
     Selects a candidate from the population using tournament selection.
     Here, fitness is defined as negative loss so that a lower loss is a higher fitness.
     """
+    tournament_size = min(tournament_size, len(population))
     selected = random.sample(list(zip(population, fitnesses)), tournament_size)
     # sort so that the best (largest fitness, i.e. smallest loss) comes first
     selected.sort(key=lambda x: x[1], reverse=True)
