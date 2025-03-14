@@ -165,11 +165,23 @@ def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, tes
                 best_fitness = fitness
                 best_candidate = candidate
 
+        # Check for stagnation (no improvement over the previous generation)
+        if gen > 0:
+            if best_candidate == prev_best_candidate:
+                stagnation_counter += 1
+            else:
+                stagnation_counter = 0
+
+        # If stagnation counter reaches the patience limit, break early
+        if stagnation_counter >= patience:
+            print(f"No improvement for {patience} generations. Ending GA early.")
+            break
+
         # Sort population by fitness (highest first)
-        sorted_population = [cand for cand, fit in sorted(zip(population, fitnesses), key=lambda x: x[1], reverse=True)]
+        sorted_population = [cand for cand, fit in sorted(zip(population, fitnesses),
+                                                            key=lambda x: x[1], reverse=True)]
         # Elitism: carry over top candidates unchanged
         elite_candidates = [copy.deepcopy(ind) for ind in sorted_population[:elitism_count]]
-
         new_population = elite_candidates.copy()
 
         # Create the rest of the new population via tournament selection, crossover, and mutation
@@ -185,6 +197,6 @@ def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, tes
 
         population = new_population
         print(f"Best candidate in generation {gen+1}: {best_candidate} (Loss: {-best_fitness})")
-
+        
     print("Best candidate overall:", best_candidate)
     return best_candidate
