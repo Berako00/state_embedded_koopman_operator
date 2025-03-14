@@ -53,16 +53,12 @@ print(f"Test tensor forced shape: {test_tensor_forced.shape}")
 
 # Define parameter ranges
 param_ranges = {
-    "Num_meas": (2, 2),
-    "Num_inputs": (1, 1),
     "Num_x_Obsv": (1, 5),
     "Num_u_Obsv": (1, 5),
     "Num_x_Neurons": (10, 50),
     "Num_u_Neurons": (10, 50),
-    "Num_hidden_x_encoder": (1, 3),
-    "Num_hidden_x_decoder": (1, 3),
-    "Num_hidden_u_encoder": (1, 3),
-    "Num_hidden_u_decoder": (1, 3),
+    "Num_hidden_x": (1, 3),  # Shared for both x encoder and decoder
+    "Num_hidden_u": (1, 3),  # Shared for both u encoder and decoder
     "alpha0": (0.01, 1.0),
     "alpha1": (1e-9, 1e-5),
     "alpha2": (1e-18, 1e-12)
@@ -72,19 +68,18 @@ param_ranges = {
 use_ga = True
 if use_ga:
     # For speed, use a lower number of epochs for evaluation (eps) and fewer generations/population size.
-    best_params = run_genetic_algorithm(training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1)
+    best_params = run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1)
 
-    Num_meas             = best_params['Num_meas']
-    Num_inputs           = best_params['Num_inputs']
-    Num_x_Obsv           = best_params['Num_x_Obsv']
-    Num_u_Obsv           = best_params['Num_u_Obsv']
-    Num_x_Neurons        = best_params['Num_x_Neurons']
-    Num_u_Neurons        = best_params['Num_u_Neurons']
-    Num_hidden_x_encoder = best_params['Num_hidden_x_encoder']
-    Num_hidden_x_decoder = best_params['Num_hidden_x_decoder']
-    Num_hidden_u_encoder = best_params['Num_hidden_u_encoder']
-    Num_hidden_u_decoder = best_params['Num_hidden_u_decoder']
-    alpha                = [best_params['alpha0'], best_params['alpha1'], best_params['alpha2']]
+    Num_meas      = best_params['Num_meas']
+    Num_inputs    = best_params['Num_inputs']
+    Num_x_Obsv    = best_params['Num_x_Obsv']
+    Num_u_Obsv    = best_params['Num_u_Obsv']
+    Num_x_Neurons = best_params['Num_x_Neurons']
+    Num_u_Neurons = best_params['Num_u_Neurons']
+    # Use the same value for both encoder and decoder hidden layers
+    Num_hidden_x  = best_params['Num_hidden_x']
+    Num_hidden_u  = best_params['Num_hidden_u']
+    alpha         = [best_params['alpha0'], best_params['alpha1'], best_params['alpha2']]
 else:
     # Default hyperparameters
     Num_meas             = 2
@@ -100,8 +95,8 @@ else:
     alpha                = [0.1, 10e-7, 10e-15]
     
 model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
-                    Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder,
-                    Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
+                    Num_u_Obsv, Num_u_Neurons, Num_hidden_x,
+                    Num_hidden_x, Num_hidden_u, Num_hidden_u)
 
 # Training Loop Parameters
 start_training_time = time.time()
@@ -115,7 +110,7 @@ W = 0
 M = 1  # Amount of models you want to run
 
 if training_type == 'normal':
-  [Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None)
+  [Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=None)
 
 elif training_type == 'mixed':
   [Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index,
@@ -123,8 +118,8 @@ elif training_type == 'mixed':
   L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array,
   L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array] = trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha,
                                                                           Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
-                                                                          Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder,
-                                                                          Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder,
+                                                                          Num_u_Obsv, Num_u_Neurons, Num_hidden_x,
+                                                                          Num_hidden_x, Num_hidden_u, Num_hidden_u,
                                                                           train_tensor_unforced, train_tensor_forced, test_tensor_unforced,
                                                                           test_tensor_forced, M)
 
