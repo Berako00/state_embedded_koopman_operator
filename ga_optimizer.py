@@ -85,10 +85,6 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
     Integer parameters are perturbed by ±1 (or ±5 for neurons) and floats are scaled.
     """
     if random.random() < mutation_rate:
-        candidate['Num_meas'] = max(param_ranges["Num_meas"][0], min(param_ranges["Num_meas"][1], candidate['Num_meas'] + random.choice([-1, 1])))
-    if random.random() < mutation_rate:
-        candidate['Num_inputs'] = max(param_ranges["Num_inputs"][0], min(param_ranges["Num_inputs"][1], candidate['Num_inputs'] + random.choice([-1, 1])))
-    if random.random() < mutation_rate:
         candidate['Num_x_Obsv'] = max(param_ranges["Num_x_Obsv"][0], min(param_ranges["Num_x_Obsv"][1], candidate['Num_x_Obsv'] + random.choice([-1, 1])))
     if random.random() < mutation_rate:
         candidate['Num_u_Obsv'] = max(param_ranges["Num_u_Obsv"][0], min(param_ranges["Num_u_Obsv"][1], candidate['Num_u_Obsv'] + random.choice([-1, 1])))
