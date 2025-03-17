@@ -76,6 +76,7 @@ param_ranges = {
 
 # ---- Define last training param -------
 eps_final = 10       # Number of epochs for final training
+check_epoch = 10
 lr = 1e-3       # Learning rate
 batch_size = 256
 S_p = 30
@@ -103,7 +104,7 @@ print(f"Validation tensor shape: {val_tensor.shape}")
 # --- Genetic Algorithm Hyperparameter Optimization ---
 if use_ga:
     # For speed, use a lower number of epochs for evaluation (eps) and fewer generations/population size.
-    best_params = run_genetic_algorithm(Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1)
+    best_params = run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1)
 
     Num_meas      = best_params['Num_meas']
     Num_inputs    = best_params['Num_inputs']
