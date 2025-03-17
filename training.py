@@ -65,10 +65,10 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
           L5_list[e] = running_L5
           L6_list[e] = running_L6
 
-          print(f'Model: {c_m}, Epoch: {e+1}, Training Running Loss: {running_loss:.3e}')
 
           # Every 20 epochs, evaluate on the test set and checkpoint if improved.
           if (e + 1) % check_epoch == 0:
+              print(f'Model: {c_m}, Epoch: {e+1}, Training Running Loss: {running_loss:.3e}')
               model.eval()
               test_running_loss = 0.0
               for (batch_x,) in test_loader:
