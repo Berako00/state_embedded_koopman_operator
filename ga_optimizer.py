@@ -3,9 +3,9 @@ import copy
 import torch
 from training import trainingfcn, trainingfcn_mixed
 
-def evaluate_candidate_normal(candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M):
+def evaluate_candidate(candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M):
     """
-    Evaluates a candidate by running a shortened training (e.g. using fewer epochs)
+    Evaluates a candidate by running a shortened training using fewer epochs
     and returns the test loss.
     """
     alpha = [candidate['alpha0'], candidate['alpha1'], candidate['alpha2']]
@@ -20,21 +20,6 @@ def evaluate_candidate_normal(candidate, train_tensor, test_tensor, eps, lr, bat
         lowest_loss = float('inf')
     return lowest_loss
 
-def evaluate_candidate_mix(candidate, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, eps, lr, batch_size, S_p, T, M):
-    """
-    Evaluates a candidate by running a shortened training (e.g. using fewer epochs)
-    and returns the test loss.
-    """
-    alpha = [candidate['alpha0'], candidate['alpha1'], candidate['alpha2']]
-    try:
-        results = trainingfcn_mixed(eps, lr, batch_size, S_p, T, alpha, candidate['Num_meas'], candidate['Num_inputs'], candidate['Num_x_Obsv'], candidate['Num_x_Neurons'], candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
-                                      candidate['Num_hidden_x'], candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, M)
-        # Use only the lowest_loss (first element) for fitness evaluation
-        lowest_loss = results[0]
-    except Exception as e:
-        print("Error evaluating candidate:", candidate, e)
-        lowest_loss = float('inf')
-    return lowest_loss
 
 def initialize_population(pop_size, param_ranges, Num_meas, Num_inputs):
     """
@@ -64,7 +49,6 @@ def tournament_selection(population, fitnesses, tournament_size=3):
     Selects a candidate from the population using tournament selection.
     Here, fitness is defined as negative loss so that a lower loss is a higher fitness.
     """
-    tournament_size = min(tournament_size, len(population))
     selected = random.sample(list(zip(population, fitnesses)), tournament_size)
     # sort so that the best (largest fitness, i.e. smallest loss) comes first
     selected.sort(key=lambda x: x[1], reverse=True)
@@ -108,12 +92,11 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
     return candidate
 
 
-def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, test_tensor, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1, patience=3):
+def run_genetic_algorithm(Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1):
     """
     Runs the genetic algorithm over a number of generations and returns the best candidate.
 
     Parameters:
-      - training_type: string, either 'normal' or 'mixed'
       - train_tensor, test_tensor: the data tensors used for evaluation
       - generations: number of generations to run
       - pop_size: population size per generation
@@ -130,7 +113,7 @@ def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, tes
 
     best_candidate = None
     best_fitness = -float('inf')  # Fitness = -loss, so higher fitness is better
-    stagnation_counter = 0  # Counts generations without improvement
+
 
     for gen in range(generations):
         # For generations after the first, store the best candidate from the previous generation
@@ -149,10 +132,7 @@ def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, tes
                 print(f"Candidate (best from previous generation): {candidate} | Loss: {loss} (evaluation skipped)")
 
             else:
-              if training_type == 'normal':
-                  loss = evaluate_candidate_normal(candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M)
-              elif training_type == 'mixed':
-                  loss = evaluate_candidate_mix(candidate, train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, eps, lr, batch_size, S_p, T, M)
+              loss = evaluate_candidate(candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M)
               fitness = -loss  # Lower loss => higher fitness
               print(f"Candidate: {candidate} | Loss: {loss}")
 
@@ -161,31 +141,19 @@ def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, tes
                 best_fitness = fitness
                 best_candidate = candidate
 
-        # Check for stagnation (no improvement over the previous generation)
-        if gen > 0:
-            if best_candidate == prev_best_candidate:
-                stagnation_counter += 1
-            else:
-                stagnation_counter = 0
-
-        # If stagnation counter reaches the patience limit, break early
-        if stagnation_counter >= patience:
-            print(f"No improvement for {patience} generations. Ending GA early.")
-            break
-
         # Sort population by fitness (highest first)
-        sorted_population = [cand for cand, fit in sorted(zip(population, fitnesses),
-                                                            key=lambda x: x[1], reverse=True)]
+        sorted_population = [cand for cand, fit in sorted(zip(population, fitnesses), key=lambda x: x[1], reverse=True)]
         # Elitism: carry over top candidates unchanged
         elite_candidates = [copy.deepcopy(ind) for ind in sorted_population[:elitism_count]]
+
         new_population = elite_candidates.copy()
 
         # Create the rest of the new population via tournament selection, crossover, and mutation
         while len(new_population) < pop_size:
-            parent1 = tournament_selection(population, fitnesses)
-            parent2 = tournament_selection(population, fitnesses)
+            parent1 = tournament_selection(population, fitnesses, tournament_size=tournament_size)
+            parent2 = tournament_selection(population, fitnesses, tournament_size=tournament_size)
             child = crossover(parent1, parent2)
-            child = mutate(child, param_ranges)
+            child = mutate(child, param_ranges, mutation_rate=mutation_rate)
             # Optional: ensure child is not identical to parent1
             while parent1 == child:
                 child = mutate(child, param_ranges)
@@ -193,6 +161,6 @@ def run_genetic_algorithm(Num_meas, Num_inputs, training_type, train_tensor, tes
 
         population = new_population
         print(f"Best candidate in generation {gen+1}: {best_candidate} (Loss: {-best_fitness})")
-        
+
     print("Best candidate overall:", best_candidate)
     return best_candidate
