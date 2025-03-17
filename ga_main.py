@@ -6,6 +6,7 @@ from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 import random as r
 import time
+import math
 
 from help_func import self_feeding, enc_self_feeding
 from nn_structure import AUTOENCODER
