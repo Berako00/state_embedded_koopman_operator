@@ -55,8 +55,8 @@ elif system == 'two_link':
 
 # ---- GA Params -------------
 use_ga = True
-generations = 1
-pop_size = 1
+generations = 2
+pop_size = 2
 eps = 10
 tournament_size = 3
 mutation_rate = 0.1
