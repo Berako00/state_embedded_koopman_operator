@@ -7,7 +7,7 @@ from help_func import self_feeding, enc_self_feeding, set_requires_grad, get_mod
 from loss_func import total_loss, total_loss_forced, total_loss_unforced
 from nn_structure import AUTOENCODER
 
-def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
+def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
 
   if device is None:
       device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -21,8 +21,7 @@ def trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_
 
   Models_loss_list = torch.zeros(M)
   c_m = 0
-  check_epoch = 10
-
+  
   Model_path = [get_model_path(i) for i in range(M)]
   Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array = [torch.zeros(M, eps) for _ in range(7)]
 
