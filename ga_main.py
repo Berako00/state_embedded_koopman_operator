@@ -29,7 +29,7 @@ system = 'two_link'     # 'two_link' or 'simple'
 # ----------------------------
 
 # ------- Data Generation Params ----------
-numICs = 10000
+numICs = 20000
 T_step = 50
 dt = 0.02
 seed = 1
@@ -59,7 +59,7 @@ generations = 2
 pop_size = 2
 eps = 10
 tournament_size = 3
-mutation_rate = 0.1
+mutation_rate = 0.2
 
 # Define parameter ranges For GA
 param_ranges = {
