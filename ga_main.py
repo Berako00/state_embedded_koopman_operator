@@ -58,7 +58,7 @@ use_ga = True
 generations = 2
 pop_size = 2
 eps = 10
-tournament_size = 3
+tournament_size = 2
 mutation_rate = 0.2
 
 # Define parameter ranges For GA
