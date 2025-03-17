@@ -28,7 +28,7 @@ def debug_L4(xuk, Num_meas, model):
 def debug_L5(xuk, Num_meas, S_p, model):
     u = xuk[:, :, Num_meas:]
     prediction = torch.zeros(xuk.shape[0], S_p+1, Num_meas, dtype=torch.float32)
-    actual = xuk[:, :(S_p + 1),:]
+    actual = xuk[:, :(S_p + 1),:Num_meas]
     prediction[:, 0, :] = xuk[:, 0, :Num_meas]
     x_k = model.x_Decoder(model.x_Koopman_op(model.x_Encoder(xuk[:, 0, :Num_meas])) + model.u_Koopman_op(model.u_Encoder(xuk[:, 0, :])))
     prediction[:, 1, :] = x_k
@@ -61,8 +61,7 @@ def debug_L6(xuk, Num_meas, Num_x_Obsv, T, model):
         prediction[:, m+1, :] = y_k
 
     return actual, prediction
-  
-    
+
 def debug_L12_uf(xuk, encoder, decoder):
     actual = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2], dtype=torch.float32)
     prediction = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2], dtype=torch.float32)
@@ -115,4 +114,3 @@ def debug_L6_uf(xuk, Num_meas, Num_x_Obsv, T, model):
         prediction[:, m+1, :] = y_k
 
     return actual, prediction
-
