@@ -239,7 +239,7 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
 
     num_vars = actual_L1.shape[2]
 
-    fig, axs = plt.subplots(num_vars, len(sample_indices), figsize=(6 * len(sample_indices), 4 * num_vars), sharex=True, sharey=True)
+    fig, axs = plt.subplots(num_vars, len(sample_indices), figsize=(6 * len(sample_indices), 4 * num_vars), sharex=True)
 
     if num_vars == 1:
         axs = axs.reshape(1, -1)
@@ -266,7 +266,7 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
     # ---------------------------
     num_vars = actual_L2.shape[2]
 
-    fig, axs = plt.subplots(num_vars, len(sample_indices), figsize=(6 * len(sample_indices), 4 * num_vars), sharex=True, sharey=True)
+    fig, axs = plt.subplots(num_vars, len(sample_indices), figsize=(6 * len(sample_indices), 4 * num_vars), sharex=True)
 
     if num_vars == 1:
         axs = axs.reshape(1, -1)
