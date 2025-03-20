@@ -10,6 +10,7 @@ def gamain_func(
         ga_params=None,  # Dictionary to override GA hyperparameters
         fix_params=None,
         training_params=None,  # Dictionary to override training hyperparameters
+        user_dir=None,
         device=None  # Device to run on (optional)
 ):
     """
@@ -206,7 +207,7 @@ def gamain_func(
         Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
         Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_x,
         Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M,
-        device=device
+        user_dir, device=device
     )
     (Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index,
      Running_Losses_Array, Lgx_Array, Lgu_Array,
@@ -235,4 +236,3 @@ def gamain_func(
         "training_results": results,
         "best_model_path": Best_Model
     }
-
