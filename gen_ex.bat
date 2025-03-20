@@ -27,10 +27,11 @@ call "%ENV_DIR%\Scripts\activate"
 
 echo Installing required packages...
 pip install --upgrade pip
-pip install numpy==1.23.0 tensorflow torch torchvision torchaudio pyinstaller
+:: Installing required libraries. Adjust versions as needed.
+pip install numpy==1.23.0 tensorflow torch torchvision torchaudio matplotlib customtkinter pyinstaller
 
 echo Generating executable...
-pyinstaller --onefile --windowed --distpath "%DIST_DIR%" GUI_main.py
+pyinstaller --clean --onefile --windowed --distpath "%DIST_DIR%" GUI_main.py
 
 echo Build completed! Your .exe is in the dist/ folder.
 
@@ -47,4 +48,5 @@ deactivate
 
 echo Done! Press any key to exit.
 pause
+
 
