@@ -29,9 +29,9 @@ system = 'two_link'     # 'two_link' or 'simple'
 # ----------------------------
 
 # ------- Data Generation Params ----------
-numICs = 40000
+numICs = 20000
 T_step = 50
-dt = 0.02
+dt = 0.01
 seed = 1
 
 if system == 'simple':
@@ -44,7 +44,7 @@ elif system == 'two_link':
   q2_range = (-313.2/2*math.pi/180, 313.2/2*math.pi/180)
   dq1_range = (-1, 1)
   dq2_range = dq1_range
-  tau_max = 1
+  tau_max = 7.5
 # -----------------------------------------
 
 if system == 'simple':
@@ -54,11 +54,11 @@ elif system == 'two_link':
   [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max)
 
 # ---- GA Params -------------
-use_ga = False
-generations = 6
-pop_size = 6
+use_ga = True
+generations = 10
+pop_size = 10
 eps = 500
-tournament_size = 2
+tournament_size = 3
 mutation_rate = 0.2
 
 # Define parameter ranges For GA
