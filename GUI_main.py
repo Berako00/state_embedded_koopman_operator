@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 import random as r
 import tkinter
 import tkinter.messagebox
+import tkinter.filedialog
 import customtkinter
+from PIL import Image
 
 from ga_main_func import gamain_func  # Replace with your actual module name
 
@@ -19,7 +21,8 @@ class RedirectText:
 
     def write(self, string):
         self.text_widget.insert("end", string)
-        self.text_widget.see("end")  # Scroll to the end as new text appears
+        self.text_widget.see("end")
+        self.text_widget.update_idletasks()
 
     def flush(self):
         pass
@@ -44,7 +47,7 @@ class App(customtkinter.CTk):
         # Create sidebar frame with widgets
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-        self.sidebar_frame.grid_rowconfigure(7, weight=1)
+        self.sidebar_frame.grid_rowconfigure(9, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame,text="Genetic Algorithm",font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
 
@@ -57,10 +60,31 @@ class App(customtkinter.CTk):
         # Import Tab
         # ---------------------------
         self.import_frame = self.import_generate_tabview.tab("Import Data")
-        self.dir_label = customtkinter.CTkLabel(self.import_frame, text="Dir:")
-        self.dir_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-        self.dir_entry = customtkinter.CTkEntry(self.import_frame)
-        self.dir_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        # Create the file icon image for the button (using "folder.png" as an example icon)
+        try:
+            self.folder_image = customtkinter.CTkImage(Image.open("folder.png"), size=(20, 20))
+        except Exception as e:
+            print("File icon image not found, proceeding without icon.")
+            self.folder_image = None
+
+        # Label for File selection (changed text to "File:" for clarity)
+        self.data_label = customtkinter.CTkLabel(self.import_frame, text="File:")
+        self.data_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
+
+        # Entry to display the selected file path
+        self.data_entry = customtkinter.CTkEntry(self.import_frame)
+        self.data_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        # Button that opens a file selection dialog
+        self.file_button = customtkinter.CTkButton(
+            self.import_frame,
+            text="",
+            image=self.folder_image,
+            command=self.open_file_dialog,
+            width=30
+        )
+        self.file_button.grid(row=0, column=2, padx=5, pady=5)
         # Allow the directory entry to expand:
         self.import_frame.grid_columnconfigure(1, weight=1)
 
@@ -106,20 +130,59 @@ class App(customtkinter.CTk):
         self.tab_selector = customtkinter.CTkOptionMenu(self.sidebar_frame,values=["Genetic Algorithm", "Fixed Parameters"],command=self.change_tab_event)
         self.tab_selector.grid(row=2, column=0, padx=20, pady=20, sticky="ew")
 
-        self.n_meas_label = customtkinter.CTkLabel(self.sidebar_frame, text="Nº States:")
-        self.n_meas_label.grid(row=3, column=0, padx=20, pady=(10, 0))
-        self.n_meas_entry = customtkinter.CTkEntry(self.sidebar_frame, width=100)
-        self.n_meas_entry.grid(row=4, column=0, padx=(0, 5), pady=5)
+        # Configure the sidebar column to expand horizontally:
+        self.sidebar_frame.grid_columnconfigure(0, weight=1)
 
-        self.n_inputs_label = customtkinter.CTkLabel(self.sidebar_frame, text="Nº Inputs:")
-        self.n_inputs_label.grid(row=5, column=0, padx=20, pady=(10, 0))
-        self.n_inputs_entry = customtkinter.CTkEntry(self.sidebar_frame, width=100)
-        self.n_inputs_entry.grid(row=6, column=0, padx=(0, 5), pady=5)
+        # Create a container frame with a light grey background that spans full width:
+        self.inputs_frame = customtkinter.CTkFrame(self.sidebar_frame, fg_color="lightgrey")
+        self.inputs_frame.grid(row=3, column=0, rowspan=4, padx=20, pady=20, sticky="ew")
+        # Make sure the container's column expands too:
+        self.inputs_frame.grid_columnconfigure(0, weight=1)
 
+        # Nº States: Label and Entry (centered inside the inputs_frame)
+        self.n_meas_label = customtkinter.CTkLabel(self.inputs_frame, text="Nº States:", anchor="center")
+        self.n_meas_label.grid(row=0, column=0, padx=10, pady=(10, 0))
+        self.n_meas_entry = customtkinter.CTkEntry(self.inputs_frame, width=100)
+        self.n_meas_entry.grid(row=1, column=0, padx=10, pady=5)
+
+        # Nº Inputs: Label and Entry (centered inside the inputs_frame)
+        self.n_inputs_label = customtkinter.CTkLabel(self.inputs_frame, text="Nº Inputs:", anchor="center")
+        self.n_inputs_label.grid(row=2, column=0, padx=10, pady=(10, 0))
+        self.n_inputs_entry = customtkinter.CTkEntry(self.inputs_frame, width=100)
+        self.n_inputs_entry.grid(row=3, column=0, padx=10, pady=5)
+
+        self.dir_frame_label = customtkinter.CTkLabel(self.sidebar_frame, text="Model Saving Directory:")
+        self.dir_frame_label.grid(row=7, column=0, padx=20, pady=(10, 0))
+        self.dir_frame = customtkinter.CTkFrame(self.sidebar_frame)
+        self.dir_frame.grid(row=8, column=0, padx=20, pady=5, sticky="ew")
+        self.dir_label = customtkinter.CTkLabel(self.dir_frame, text="Dir:")
+        self.dir_label.pack(side="left", padx=(0, 5))
+
+        # Load the folder icon image (assumes "folder.png" is available in your project directory)
+        try:
+            self.folder_image = customtkinter.CTkImage(Image.open("folder.png"), size=(20, 20))
+        except Exception as e:
+            print("Folder image not found, proceeding without icon.")
+            self.folder_image = None
+
+        # Folder button that opens a directory dialog
+        self.dir_button = customtkinter.CTkButton(
+            self.dir_frame,
+            text="",
+            image=self.folder_image,
+            command=self.open_directory_dialog,
+            width=30
+        )
+
+        self.dir_button.pack(side="right")
+
+        # Entry to display the selected directory
+        self.dir_entry = customtkinter.CTkEntry(self.dir_frame)
+        self.dir_entry.pack(side="left", fill="x", expand=True)
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame,text="Appearance Mode:",anchor="w")
-        self.appearance_mode_label.grid(row=8, column=0, padx=20, pady=(10, 0))
+        self.appearance_mode_label.grid(row=10, column=0, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame,values=["Light", "Dark", "System"],command=self.change_appearance_mode_event)
-        self.appearance_mode_optionemenu.grid(row=9, column=0, padx=20, pady=(10, 10))
+        self.appearance_mode_optionemenu.grid(row=11, column=0, padx=20, pady=(10, 10))
 
         # Create the tabview in column 1, row 0
         self.tabview = customtkinter.CTkTabview(self, width=250)
@@ -451,6 +514,20 @@ class App(customtkinter.CTk):
     def import_button_event(self):
         print("import button click")
 
+    def open_directory_dialog(self):
+        dir_selected = tkinter.filedialog.askdirectory()
+        if dir_selected:
+            self.dir_entry.delete(0, "end")
+            self.dir_entry.insert(0, dir_selected)
+
+    def open_file_dialog(self):
+        file_selected = tkinter.filedialog.askopenfilename(
+            filetypes=[("All Files", "*.*")]  # You can adjust the file types as needed
+        )
+        if file_selected:
+            self.data_entry.delete(0, "end")
+            self.data_entry.insert(0, file_selected)
+
     def start_button_event(self):
         try:
             # Retrieve and convert GUI inputs
@@ -565,6 +642,8 @@ class App(customtkinter.CTk):
                 'S_p': 30
             }
 
+            user_dir = self.dir_entry.get()
+
             # Now call the function with the dynamic inputs
             results = gamain_func(
                 system=system,
@@ -576,7 +655,8 @@ class App(customtkinter.CTk):
                 use_ga = use_ga,
                 ga_params = ga_params,
                 fix_params = fix_params,
-                training_params=training_params
+                training_params=training_params,
+                user_dir = user_dir
             )
 
             trained_model = results["model"]
@@ -587,3 +667,4 @@ class App(customtkinter.CTk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
