@@ -27,7 +27,7 @@ call "%ENV_DIR%\Scripts\activate"
 
 echo Installing required packages...
 pip install --upgrade pip
-pip install numpy==1.23.0 tensorflow pyinstaller
+pip install numpy==1.23.0 tensorflow torch torchvision torchaudio pyinstaller
 
 echo Generating executable...
 pyinstaller --onefile --windowed --distpath "%DIST_DIR%" GUI_main.py
