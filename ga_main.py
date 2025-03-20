@@ -142,5 +142,7 @@ print(f"Total time is: {total_time}")
 print(f"Total training time is: {total_training_time}")
 
 # ----- Result Plotting and Further Analysis -----
+plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_loss_index)
 plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
+
