@@ -54,7 +54,7 @@ elif system == 'two_link':
   [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max)
 
 # ---- GA Params -------------
-use_ga = True
+use_ga = False
 generations = 10
 pop_size = 10
 eps = 500
@@ -86,13 +86,13 @@ W = 0
 M = 1  # Amount of models you want to run
 
 if not use_ga:
-    Num_x_Obsv    = 19
-    Num_u_Obsv    = 11
-    Num_x_Neurons = 28
-    Num_u_Neurons = 28
+    Num_x_Obsv    = 17
+    Num_u_Obsv    = 18
+    Num_x_Neurons = 45
+    Num_u_Neurons = 50
     Num_hidden_x  = 1
     Num_hidden_u  = 1
-    alpha         = [0.896, 10e-6, 1e-12]
+    alpha         = [0.656327, 5.1215e-6, 5.7252e-13]
 # ---------------------------------------
 
 
