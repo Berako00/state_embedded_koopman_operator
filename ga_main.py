@@ -54,10 +54,10 @@ elif system == 'two_link':
   [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max)
 
 # ---- GA Params -------------
-use_ga = False
-generations = 10
+use_ga = True
+generations = 35
 pop_size = 10
-eps = 500
+eps = 300
 tournament_size = 3
 mutation_rate = 0.2
 
@@ -76,7 +76,7 @@ param_ranges = {
 # ------------------------------
 
 # ---- Define last training param -------
-eps_final = 3000       # Number of epochs for final training
+eps_final = 10000       # Number of epochs for final training
 check_epoch = 10
 lr = 1e-3       # Learning rate
 batch_size = 256
