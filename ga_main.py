@@ -40,8 +40,8 @@ if system == 'simple':
   mu = -0.05
   lam = -1
 elif system == 'two_link':
-  q1_range = (-math.pi/2, math.pi/2)
-  q2_range = (-313.2/2*math.pi/180, 313.2/2*math.pi/180)
+  q1_range = (-math.pi, math.pi)
+  q2_range = (-math.pi, math.pi)
   dq1_range = (-1, 1)
   dq2_range = dq1_range
   tau_max = 7.5
