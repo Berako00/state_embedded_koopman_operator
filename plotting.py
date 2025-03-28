@@ -34,6 +34,7 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     ax_top.set_xlabel('Epochs', fontsize=label_fontsize)
     ax_top.set_ylabel('Loss', fontsize=label_fontsize)
     ax_top.set_title('Losses', fontsize=title_fontsize)
+    ax_top.set_yscale('log')  # Set y-axis to logarithmic scale
 
     # Lower subplots: arranged as a 3x2 grid.
     ax1 = plt.subplot2grid((4, 2), (1, 0))
@@ -42,6 +43,7 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     ax1.set_xlabel('Epochs', fontsize=label_fontsize)
     ax1.set_ylabel('Loss', fontsize=label_fontsize)
     ax1.set_title('Lgx', fontsize=title_fontsize)
+    ax1.set_yscale('log')
 
     ax2 = plt.subplot2grid((4, 2), (1, 1))
     ax2.plot(Lgu_Array[idx], label='Lgu', color=colors[1])
@@ -49,6 +51,7 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     ax2.set_xlabel('Epochs', fontsize=label_fontsize)
     ax2.set_ylabel('Loss', fontsize=label_fontsize)
     ax2.set_title('Lgu', fontsize=title_fontsize)
+    ax2.set_yscale('log')
 
     ax3 = plt.subplot2grid((4, 2), (2, 0))
     ax3.plot(L3_Array[idx], label='L3', color=colors[2])
@@ -56,6 +59,7 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     ax3.set_xlabel('Epochs', fontsize=label_fontsize)
     ax3.set_ylabel('Loss', fontsize=label_fontsize)
     ax3.set_title('L3', fontsize=title_fontsize)
+    ax3.set_yscale('log')
 
     ax4 = plt.subplot2grid((4, 2), (2, 1))
     ax4.plot(L4_Array[idx], label='L4', color=colors[3])
@@ -63,6 +67,7 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     ax4.set_xlabel('Epochs', fontsize=label_fontsize)
     ax4.set_ylabel('Loss', fontsize=label_fontsize)
     ax4.set_title('L4', fontsize=title_fontsize)
+    ax4.set_yscale('log')
 
     ax5 = plt.subplot2grid((4, 2), (3, 0))
     ax5.plot(L5_Array[idx], label='L5', color=colors[4])
@@ -70,6 +75,7 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     ax5.set_xlabel('Epochs', fontsize=label_fontsize)
     ax5.set_ylabel('Loss', fontsize=label_fontsize)
     ax5.set_title('L5', fontsize=title_fontsize)
+    ax5.set_yscale('log')
 
     ax6 = plt.subplot2grid((4, 2), (3, 1))
     ax6.plot(L6_Array[idx], label='L6', color=colors[5])
@@ -77,9 +83,11 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     ax6.set_xlabel('Epochs', fontsize=label_fontsize)
     ax6.set_ylabel('Loss', fontsize=label_fontsize)
     ax6.set_title('L6', fontsize=title_fontsize)
+    ax6.set_yscale('log')
 
     plt.tight_layout()
     plt.show()
+
 
 def plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array, 
                       L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array, Lowest_loss_index):
