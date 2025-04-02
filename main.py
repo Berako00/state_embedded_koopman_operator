@@ -89,6 +89,33 @@ check_epoch = 2
 
 [Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=device)
 
+ind_loss = int(Lowest_loss_index)
+Lgx_Array = np.array(Lgx_Array[ind_loss])
+Lgu_Array = np.array(Lgu_Array[ind_loss])
+L3_Array = np.array(L3_Array[ind_loss])
+L4_Array = np.array(L4_Array[ind_loss])
+L5_Array = np.array(L5_Array[ind_loss])
+L6_Array = np.array(L6_Array[ind_loss])
+Running_Losses_Array = np.array(Running_Losses_Array[ind_loss])
+
+
+# Create a dictionary with each array as a column
+data = {
+    "Lgx": Lgx_Array,
+    "Lgu": Lgu_Array,
+    "L3": L3_Array,
+    "L4": L4_Array,
+    "L5": L5_Array,
+    "L6": L6_Array,
+    "Running_Losses": Running_Losses_Array
+}
+
+# Create a DataFrame
+df = pd.DataFrame(data)
+
+# Save the DataFrame to an Excel file (all data in one sheet, different columns)
+df.to_excel("training_results.xlsx", index=False)
+
 # Load the parameters of the best model
 checkpoint = torch.load(Best_Model, map_location=device)
 
