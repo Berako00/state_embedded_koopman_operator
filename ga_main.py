@@ -31,7 +31,7 @@ system = 'two_link'     # 'two_link' or 'simple'
 # ------- Data Generation Params ----------
 numICs = 20000
 T_step = 50
-dt = 0.01
+dt = 0.02
 seed = 1
 
 if system == 'simple':
