@@ -7,7 +7,7 @@ from help_func import self_feeding, enc_self_feeding, set_requires_grad, get_mod
 from loss_func import total_loss, total_loss_forced, total_loss_unforced
 from nn_structure import AUTOENCODER
 
-def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
+def trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
 
   if device is None:
       device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -47,6 +47,10 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_i
 
   for c_m in range(M):
       model_path_i = Model_path[c_m]
+      model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv,
+                          Num_x_Neurons, Num_u_Obsv, Num_u_Neurons,
+                          Num_hidden_x_encoder,
+                          Num_hidden_u_encoder, Num_hidden_u_decoder).to(device)
       optimizer = optim.Adam(model.parameters(), lr=lr)
       best_test_loss_checkpoint = float('inf')
 
@@ -95,9 +99,16 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_i
 
               # If test loss is lower than the one from the previous checkpoint, save the model.
               if test_running_loss < best_test_loss_checkpoint:
+                  breakout_counter = 0
                   best_test_loss_checkpoint = test_running_loss
                   torch.save(checkpoint, model_path_i)
                   print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
+              else:
+                  breakout_counter += 1
+                  print(f'Checkpoint at Epoch {e+1}: No improvement in test loss.')
+              if breakout_counter >= breakout:
+                  print(f'No improvement in test loss for {breakout} epochs. Stopping training.')
+                  break
 
       checkpoint = torch.load(model_path_i, map_location=device)
       if 'state_dict' in checkpoint:
