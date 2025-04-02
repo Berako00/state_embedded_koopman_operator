@@ -5,26 +5,27 @@ import os
 from loss_func import custom_loss
 
 def get_model_path(i):
-    path5 = f"/home/trarity/master/koopman_operator/data/"
-    path2 = f"C:/Users/jokin/Desktop/Uni/Aalborg/Master/Masters_Thesis/Path/"
-    path3 = f"/content/drive/My Drive/Colab Notebooks/"
-    path4 = f"/content/drive/MyDrive/Colab Notebooks/"
-    path1 = f"C:/Users/"
+    windows_dir = r"C:\Users\jokin\Desktop\Uni\Aalborg\Master\Masters_Thesis"
+    linux_dir   = "/home/trarity/master/koopman_control/data"
+    colab_dir1  = "/content/drive/My Drive/Colab Notebooks"
+    colab_dir2  = "/content/drive/MyDrive/Colab Notebooks"
+
+    path2 = os.path.join(windows_dir, f"Autoencoder_model_params{i}.pth")
+    path1 = os.path.join(linux_dir, f"Autoencoder_model_params{i}.pth")
+    path3 = os.path.join(colab_dir1, f"Autoencoder_model_params{i}.pth")
+    path4 = os.path.join(colab_dir2, f"Autoencoder_model_params{i}.pth")
+
     if os.path.exists(path1):
-        path1 = f"{path1}Autoencoder_model_params{i}.pth"
-        return path1
+        chosen_path = path1
     elif os.path.exists(path2):
-        path2 = f"{path2}Autoencoder_model_params{i}.pth"
-        return path2
+        chosen_path = path2
     elif os.path.exists(path3):
-        path3 = f"{path3}Autoencoder_model_params{i}.pth"
-        return path3
-    elif os.path.exists(path5):
-        path5 = f"{path5}Autoencoder_model_params{i}.pth"
-        return path5
+        chosen_path = path3
     else:
-        path4 = f"{path4}Autoencoder_model_params{i}.pth"
-        return path4
+        chosen_path = path4
+    print("Using model path:", chosen_path)
+    return chosen_path
+
 
 def set_requires_grad(layers, requires_grad):
     for param in layers:
