@@ -102,10 +102,12 @@ print(f"Validation tensor shape: {val_tensor.shape}")
 
 
 
+
 # --- Genetic Algorithm Hyperparameter Optimization ---
 if use_ga:
     # For speed, use a lower number of epochs for evaluation (eps) and fewer generations/population size.
-    best_params = run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1)
+    best_params = run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1, device=device)
+    print(f"Best parameters found: {best_params}")
 
     Num_meas      = best_params['Num_meas']
     Num_inputs    = best_params['Num_inputs']
@@ -113,7 +115,6 @@ if use_ga:
     Num_u_Obsv    = best_params['Num_u_Obsv']
     Num_x_Neurons = best_params['Num_x_Neurons']
     Num_u_Neurons = best_params['Num_u_Neurons']
-    # Use the same value for both encoder and decoder hidden layers
     Num_hidden_x  = best_params['Num_hidden_x']
     Num_hidden_u  = best_params['Num_hidden_u']
     alpha         = [best_params['alpha0'], best_params['alpha1'], best_params['alpha2']]
@@ -122,16 +123,21 @@ if use_ga:
 
 model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
                     Num_u_Obsv, Num_u_Neurons, Num_hidden_x,
-                    Num_hidden_x, Num_hidden_u, Num_hidden_u)
+                    Num_hidden_u, Num_hidden_u)
 
 # Training Loop Parameters
 start_training_time = time.time()
 
 
-[Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=None)
+[Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=device)
 
 # Load the parameters of the best model
-model.load_state_dict(torch.load(Best_Model))
+checkpoint = torch.load(Best_Model, map_location=device)
+if 'state_dict' in checkpoint:
+    state_dict = checkpoint['state_dict']
+else:
+    state_dict = checkpoint
+model.load_state_dict(state_dict)
 print(f"Loaded model parameters from Model: {Best_Model}")
 
 end_time = time.time()
