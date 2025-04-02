@@ -134,6 +134,32 @@ start_training_time = time.time()
 
 [Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=device)
 
+ind_loss = int(Lowest_loss_index)
+Lgx = np.asarray(Lgx_Array[ind_loss])
+Lgu = np.asarray(Lgu_Array[ind_loss])
+L3 = np.asarray(L3_Array[ind_loss])
+L4 = np.asarray(L4_Array[ind_loss])
+L5 = np.asarray(L5_Array[ind_loss])
+L6 = np.asarray(L6_Array[ind_loss])
+Running_Losses = np.asarray(Running_Losses_Array[ind_loss])
+
+# Create a dictionary with each array as a column
+data = {
+    "Lgx": Lgx,
+    "Lgu": Lgu,
+    "L3": L3,
+    "L4": L4,
+    "L5": L5,
+    "L6": L6,
+    "Running_Losses": Running_Losses
+}
+
+# Create a DataFrame
+df = pd.DataFrame(data)
+
+# Save the DataFrame to an Excel file (all data in one sheet, different columns)
+df.to_excel("training_results.xlsx", index=False)
+
 # Load the parameters of the best model
 checkpoint = torch.load(Best_Model, map_location=device)
 if 'state_dict' in checkpoint:
