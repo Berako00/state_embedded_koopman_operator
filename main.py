@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import random as r
 import time
+import openpyxl
 
 from help_func import self_feeding, enc_self_feeding
 from nn_structure import AUTOENCODER
