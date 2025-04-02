@@ -5,19 +5,16 @@ import os
 from loss_func import custom_loss
 
 def get_model_path(i):
-    path1 = f"/home/trarity/master/koopman_operator/data/Autoencoder_model_params{i}.pth"
+    path1 = f"/home/trarity/master/koopman_control/data/Autoencoder_model_params{i}.pth"
     path2 = f"C:/Users/jokin/Desktop/Uni/Aalborg/Master/Masters_Thesis/Path/Autoencoder_model_params{i}.pth"
     path3 = f"/content/drive/My Drive/Colab Notebooks/Autoencoder_model_params{i}.pth"
     path4 = f"/content/drive/MyDrive/Colab Notebooks/Autoencoder_model_params{i}.pth"
-    path5 = f"/home/trarity/koopman_operator/data/Autoencoder_model_params{i}.pth"
     if os.path.exists(path1):
         return path1
     elif os.path.exists(path2):
         return path2
     elif os.path.exists(path3):
         return path3
-    elif os.path.exists(path5):
-        return path5
     else:
         return path4
 
@@ -58,7 +55,7 @@ def enc_self_feeding(model, xuk, Num_meas):
 
         v = model.u_Encoder(torch.cat((x_k, u[:, m, :]), dim=1))
         y_k = model.x_Koopman_op(y_k) + model.u_Koopman_op(v)
-        x_k = model.x_Decoder(y_k)
+        x_k = y_k[:, :Num_meas]
         predictions.append(x_k)
 
     predictions = torch.stack(predictions, dim=1)
@@ -77,7 +74,7 @@ def enc_self_feeding_uf(model, xuk, Num_meas):
     for m in range(0, num_steps-1):
 
         y_k = model.x_Koopman_op(y_k)
-        x_k = model.x_Decoder(y_k)
+        x_k = y_k[:, :Num_meas]
         predictions.append(x_k)
 
     predictions = torch.stack(predictions, dim=1)
