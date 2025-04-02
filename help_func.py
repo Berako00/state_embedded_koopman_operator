@@ -6,7 +6,7 @@ from loss_func import custom_loss
 
 def get_model_path(i):
     windows_dir1 = r"C:\Users\jokin\Desktop\Uni\Aalborg\Master\Masters_Thesis"
-    windows_dir2 = r"C:\C:\Users\Labuser\Desktop\WAPNN"
+    windows_dir2 = r"C:\Users\Labuser\Desktop\WAPNN"
     linux_dir   = "/home/trarity/master/koopman_control/data"
     colab_dir1  = "/content/drive/My Drive/Colab Notebooks"
     colab_dir2  = "/content/drive/MyDrive/Colab Notebooks"  
