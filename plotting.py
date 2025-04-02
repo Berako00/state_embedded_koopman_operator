@@ -89,7 +89,7 @@ def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lo
     plt.show()
 
 
-def plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array, 
+def plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array,
                       L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array, Lowest_loss_index):
     # Set fontsizes for title, labels, and legend.
     title_fontsize = 14
@@ -159,7 +159,7 @@ def plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_
     ax6.set_title('L6', fontsize=title_fontsize)
 
     plt.tight_layout()
-    plt.show() 
+    plt.show()
 
     fig = plt.figure(figsize=(18, 8))
 
@@ -219,7 +219,7 @@ def plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_
     ax6.set_title('L6', fontsize=title_fontsize)
 
     plt.tight_layout()
-    plt.show() 
+    plt.show()
 
 def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
     # Set font sizes
@@ -231,8 +231,8 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
     xuk = val_tensor
 
     # Get the debug outputs (assumes debug_* functions are defined)
-    actual_L1, predicted_L1 = debug_L12(xuk[:, :, :Num_meas], model.x_Encoder, model.x_Decoder)
-    actual_L2, predicted_L2 = debug_L12(xuk, model.u_Encoder, model.u_Decoder)
+    actual_L1, predicted_L1 = debug_L1(xuk, Num_meas, model)
+    actual_L2, predicted_L2 = debug_L2(xuk, Num_meas, model)
     actual_L3, predicted_L3 = debug_L3(xuk, Num_meas, model)
     actual_L4, predicted_L4 = debug_L4(xuk, Num_meas, model)
     actual_L5, predicted_L5 = debug_L5(xuk, Num_meas, S_p, model)
@@ -367,6 +367,7 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
     # L5 VALIDATION PLOT
     # ---------------------------
     num_vars = actual_L5.shape[2]
+    print(num_vars)
 
     fig, axs = plt.subplots(num_vars, len(sample_indices), figsize=(6 * len(sample_indices), 4 * num_vars), sharex=True)
 
@@ -382,7 +383,7 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
             ax = axs[var, i]
             ax.plot(time_steps, actual_traj[:, var].cpu().numpy(), 'o-', label=f'True')
             ax.plot(time_steps, predicted_traj[:, var].detach().cpu().numpy(), 'x--', label=f'Predicted')
-            ax.set_title(f"Validation L5, Sample {idx} (x{var+1})", fontsize=title_fontsize)
+            ax.set_title(f"Validation L6, Sample {idx} (x{var+1})", fontsize=title_fontsize)
             ax.set_xlabel("Time step", fontsize=label_fontsize)
             ax.set_ylabel(f"x{var+1}", fontsize=label_fontsize)
             ax.legend(fontsize=legend_fontsize)
@@ -412,7 +413,7 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
             # Detach both tensors before converting to numpy
             ax.plot(time_steps, actual_traj[:, var].detach().cpu().numpy(), 'o-', label='True')
             ax.plot(time_steps, predicted_traj[:, var].detach().cpu().numpy(), 'x--', label='Predicted')
-            ax.set_title(f"Validation L6, Sample {idx} (Y{var+1})", fontsize=title_fontsize)
+            ax.set_title(f"Validation L6, Sample {idx} (x{var+1})", fontsize=title_fontsize)
             ax.set_xlabel("Time step", fontsize=label_fontsize)
             ax.set_ylabel(f"x{var+1}", fontsize=label_fontsize)
             ax.legend(fontsize=legend_fontsize)
