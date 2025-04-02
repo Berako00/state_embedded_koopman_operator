@@ -11,7 +11,7 @@ import time
 from help_func import self_feeding, enc_self_feeding
 from nn_structure import AUTOENCODER
 from training import trainingfcn
-from data_generation import DataGenerator
+from data_generation import DataGenerator, TwoLinkRobotDataGenerator
 from debug_func import debug_L1, debug_L2, debug_L3, debug_L4, debug_L5, debug_L6
 from plotting import plot_results, plot_losses, plot_debug
 
