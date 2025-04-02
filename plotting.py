@@ -3,7 +3,7 @@ import matplotlib
 matplotlib.use("TkAgg")  # Enables interactive plotting
 import matplotlib.pyplot as plt
 
-from debug_func import debug_L12, debug_L3, debug_L4, debug_L5, debug_L6
+from debug_func import debug_L1, debug_L2, debug_L3, debug_L4, debug_L5, debug_L6
 from help_func import self_feeding, enc_self_feeding
 
 def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_test_loss_index):
