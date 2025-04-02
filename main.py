@@ -21,52 +21,82 @@ print("Using device:", device)
 start_time = time.time()
 # Data Generation
 
-numICs = 10000
-x1range = (-0.5, 0.5)
-x2range = x1range
+Setup = 'Twolink'# Simple, Twolink
+
+numICs = 20000
 T_step = 50
 dt = 0.02
-mu = -0.05
-lam = -1
-seed = 1
 
-[train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, mu, lam, T_step, dt)
+if Setup == 'Simple':
+    x1range = (-0.5, 0.5)
+    x2range = x1range
+    mu = -0.05
+    lam = -1
+    seed = 1
+    [train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, mu, lam, T_step, dt)
+    # NN Structure
+
+    Num_meas = 2
+    Num_inputs = 1
+    Num_x_Obsv = 3
+    Num_u_Obsv = 3
+    Num_x_Neurons = 30
+    Num_u_Neurons = 30
+    Num_hidden_x_encoder = 2
+    Num_hidden_u_encoder = 2
+    Num_hidden_u_decoder = 2
+
+elif Setup == 'Twolink':
+    q1_range = (-np.pi, np.pi)
+    q2_range = q1_range
+    dq1_range = (-1, 1)
+    dq2_range = dq1_range
+    [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt)
+
+    # NN Structure
+
+    Num_meas = 4
+    Num_inputs = 2
+    Num_x_Obsv = 17
+    Num_u_Obsv = 18
+    Num_x_Neurons = 45
+    Num_u_Neurons = 50
+    Num_hidden_x_encoder = 1
+    Num_hidden_u_encoder = 1
+    Num_hidden_u_decoder = 1
 
 print(f"Train tensor shape: {train_tensor.shape}")
 print(f"Test tensor shape: {test_tensor.shape}")
 print(f"Validation tensor shape: {val_tensor.shape}")
-# NN Structure
 
-Num_meas = 2
-Num_inputs = 1
-Num_x_Obsv = 3
-Num_u_Obsv = 3
-Num_x_Neurons = 30
-Num_u_Neurons = 30
-Num_hidden_x_encoder = 2
-Num_hidden_x_decoder = 2
-Num_hidden_u_encoder = 2
-Num_hidden_u_decoder = 2
 
 # Instantiate the model and move it to the GPU (if available)
-model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
+model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder)
 
 # Training Loop
 start_training_time = time.time()
 
-eps = 5       # Number of epochs per batch size
+eps = 2      # Number of epochs per batch size
 lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
 T = len(train_tensor[0, :, :])
-alpha = [0.1, 10e-7, 10e-15] 
+alpha = [0.001, 10e-9, 10e-14]
 W = 0
-M = 2 # Amount of models you want to run
+M = 1 # Amount of models you want to run
+check_epoch = 2
 
-[Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_x_decoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None)
+[Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=device)
 
 # Load the parameters of the best model
-model.load_state_dict(torch.load(Best_Model, map_location=device, weights_only=True))
+checkpoint = torch.load(Best_Model, map_location=device)
+
+if 'state_dict' in checkpoint:
+    state_dict = checkpoint['state_dict']
+else:
+    state_dict = checkpoint
+model.load_state_dict(state_dict)
+
 print(f"Loaded model parameters from Model: {Best_Model}")
 
 end_time =  time.time()
