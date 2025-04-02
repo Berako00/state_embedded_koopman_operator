@@ -4,6 +4,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
+import numpy as np
 import random as r
 import time
 
@@ -47,7 +48,7 @@ if Setup == 'Simple':
     Num_hidden_u_decoder = 2
 
 elif Setup == 'Twolink':
-    q1_range = (-math.pi, math.pi)
+    q1_range = (-np.pi, np.pi)
     q2_range = q1_range
     dq1_range = (-1, 1)
     dq2_range = dq1_range
