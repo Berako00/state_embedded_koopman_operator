@@ -4,8 +4,9 @@ import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 import matplotlib
-matplotlib.use("TkAgg")  # Omogoča interaktivno risanje
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
+import numpy as np
 import random as r
 import time
 
