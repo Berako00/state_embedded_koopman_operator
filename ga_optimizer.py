@@ -3,7 +3,7 @@ import copy
 import torch
 from training import trainingfcn, trainingfcn_mixed
 
-def evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M):
+def evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M, device=None):
     """
     Evaluates a candidate by running a shortened training using fewer epochs
     and returns the test loss.
@@ -11,7 +11,7 @@ def evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, l
     alpha = [candidate['alpha0'], candidate['alpha1'], candidate['alpha2']]
     try:
         results = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, candidate['Num_meas'], candidate['Num_inputs'], candidate['Num_x_Obsv'], candidate['Num_x_Neurons'], candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
-                                candidate['Num_hidden_x'], candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor, test_tensor, M)
+                                candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor, test_tensor, M, device=device)
 
         # Use only the lowest_loss (first element) for fitness evaluation
         lowest_loss = results[0]
@@ -92,7 +92,7 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
     return candidate
 
 
-def run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1):
+def run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1, device=None):
     """
     Runs the genetic algorithm over a number of generations and returns the best candidate.
 
@@ -132,7 +132,7 @@ def run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_
                 print(f"Candidate (best from previous generation): {candidate} | Loss: {loss} (evaluation skipped)")
 
             else:
-              loss = evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M)
+              loss = evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M, device)
               fitness = -loss  # Lower loss => higher fitness
               print(f"Candidate: {candidate} | Loss: {loss}")
 
