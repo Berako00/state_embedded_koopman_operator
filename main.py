@@ -60,13 +60,13 @@ elif Setup == 'Twolink':
 
     Num_meas = 4
     Num_inputs = 2
-    Num_x_Obsv = 17
-    Num_u_Obsv = 18
-    Num_x_Neurons = 128
-    Num_u_Neurons = 128
-    Num_hidden_x_encoder = 3
-    Num_hidden_u_encoder = 3
-    Num_hidden_u_decoder = 3
+    Num_x_Obsv = 19
+    Num_u_Obsv = 8
+    Num_x_Neurons = 50
+    Num_u_Neurons = 50
+    Num_hidden_x_encoder = 2
+    Num_hidden_u_encoder = 2
+    Num_hidden_u_decoder = 2
 
 print(f"Train tensor shape: {train_tensor.shape}")
 print(f"Test tensor shape: {test_tensor.shape}")
