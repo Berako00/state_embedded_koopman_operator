@@ -7,30 +7,12 @@ from help_func import self_feeding, enc_self_feeding, set_requires_grad, get_mod
 from loss_func import total_loss, total_loss_forced, total_loss_unforced
 from nn_structure import AUTOENCODER
 
-def trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
+
+def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
+                Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
 
   if device is None:
       device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-  hyperparams = {
-        'Num_meas': Num_meas,
-        'Num_inputs': Num_inputs,
-        'Num_x_Obsv': Num_x_Obsv,
-        'Num_x_Neurons': Num_x_Neurons,
-        'Num_u_Obsv': Num_u_Obsv,
-        'Num_u_Neurons': Num_u_Neurons,
-        'Num_hidden_x_encoder': Num_hidden_x_encoder,
-        'Num_hidden_u_encoder': Num_hidden_u_encoder
-  }
-  model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv,
-                      Num_x_Neurons, Num_u_Obsv, Num_u_Neurons,
-                      Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder).to(device)
-  checkpoint = {
-      'state_dict': model.state_dict(),
-      **hyperparams  # Unpack the hyperparameters into the dictionary
-  }
-
-
 
   pin_memory = True if device.type == "cuda" else False
 
@@ -43,7 +25,7 @@ def trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, Num_m
   c_m = 0
 
   Model_path = [get_model_path(i) for i in range(M)]
-  Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array = [torch.zeros(M, eps) for _ in range(7)]
+  Running_Losses_Array, Lgu_Array, L4_Array, L6_Array = [torch.zeros(M, eps) for _ in range(4)]
 
   for c_m in range(M):
       model_path_i = Model_path[c_m]
@@ -51,42 +33,39 @@ def trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, Num_m
                           Num_x_Neurons, Num_u_Obsv, Num_u_Neurons,
                           Num_hidden_x_encoder,
                           Num_hidden_u_encoder, Num_hidden_u_decoder).to(device)
+
       optimizer = optim.Adam(model.parameters(), lr=lr)
+
       best_test_loss_checkpoint = float('inf')
 
-      running_loss_list, Lgx_list, Lgu_list, L3_list, L4_list, L5_list, L6_list = [torch.zeros(eps) for _ in range(7)]
+      running_loss_list, Lgu_list, L4_list, L6_list = [torch.zeros(eps) for _ in range(4)]
 
       for e in range(eps):
           model.train()
-          running_loss, running_Lgx, running_Lgu, running_L3, running_L4, running_L5, running_L6 = [0.0] * 7
+          running_loss, running_Lgu, running_L4, running_L6 = [0.0] * 4
 
           for (batch_x,) in train_loader:
               batch_x = batch_x.to(device, non_blocking=True)
               optimizer.zero_grad()
-              [loss, L_gx, L_gu, L_3, L_4, L_5, L_6] = total_loss(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
+
+              [loss, L_gu, L_4, L_6] = total_loss(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
               loss.backward()
               optimizer.step()
               running_loss += loss.item()
-              running_Lgx += L_gx.item()
               running_Lgu += L_gu.item()
-              running_L3 += L_3.item()
               running_L4 += L_4.item()
-              running_L5 += L_5.item()
               running_L6 += L_6.item()
 
               torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=2.0)
 
           running_loss_list[e] = running_loss
-          Lgx_list[e] = running_Lgx
           Lgu_list[e] = running_Lgu
-          L3_list[e] = running_L3
           L4_list[e] = running_L4
-          L5_list[e] = running_L5
           L6_list[e] = running_L6
 
 
 
-          # Every 20 epochs, evaluate on the test set and checkpoint if improved.
+          # Every x epochs, evaluate on the test set and checkpoint if improved.
           if (e + 1) % check_epoch == 0:
               print(f'Model: {c_m}, Epoch: {e+1}, Training Running Loss: {running_loss:.3e}')
               model.eval()
@@ -99,31 +78,16 @@ def trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, Num_m
 
               # If test loss is lower than the one from the previous checkpoint, save the model.
               if test_running_loss < best_test_loss_checkpoint:
-                  breakout_counter = 0
                   best_test_loss_checkpoint = test_running_loss
-                  torch.save(checkpoint, model_path_i)
+                  torch.save(model.state_dict(), model_path_i)
                   print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
-              else:
-                  breakout_counter += 1
-                  print(f'Checkpoint at Epoch {e+1}: No improvement in test loss.')
-              if breakout_counter >= breakout:
-                  print(f'No improvement in test loss for {breakout} epochs. Stopping training.')
-                  break
 
-      checkpoint = torch.load(model_path_i, map_location=device)
-      if 'state_dict' in checkpoint:
-          state_dict = checkpoint['state_dict']
-      else:
-          state_dict = checkpoint
-      model.load_state_dict(state_dict)
+      model.load_state_dict(torch.load(model_path_i, map_location=device, weights_only=True))
 
       Models_loss_list[c_m] = best_test_loss_checkpoint
       Running_Losses_Array[c_m, :] = running_loss_list
-      Lgx_Array[c_m, :] = Lgx_list
       Lgu_Array[c_m, :] = Lgu_list
-      L3_Array[c_m, :] = L3_list
       L4_Array[c_m, :] = L4_list
-      L5_Array[c_m, :] = L5_list
       L6_Array[c_m, :] = L6_list
 
   # Find the best of the models
@@ -134,7 +98,8 @@ def trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, Num_m
 
   Best_Model = Model_path[Lowest_loss_index]
 
-  return (Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array)
+  return (Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgu_Array, L4_Array, L6_Array)
+
 
 ###
 
