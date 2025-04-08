@@ -3,18 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-def debug_L1(xuk, Num_meas, model):
-    xuk = xuk[:,:,:Num_meas]
-    actual = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2], dtype=torch.float32)
-    prediction = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2], dtype=torch.float32)
-
-    for m in range(0,len(xuk[0, :, 0])):
-        pred = model.x_Encoder(xuk[:, m, :])
-        prediction[:, m, :] = pred[:, :Num_meas]
-        actual[:, m, :]  = xuk[:, m, :Num_meas]
-    return actual, prediction
-
-
 def debug_L2(xuk, Num_meas, model):
     actual = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2]-Num_meas, dtype=torch.float32)
     prediction = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2]-Num_meas, dtype=torch.float32)
@@ -23,6 +11,7 @@ def debug_L2(xuk, Num_meas, model):
         prediction[:, m, :] = model.u_Decoder(model.u_Encoder(xuk[:, m, :]))
         actual[:, m, :]  = xuk[:, m, Num_meas:]
     return actual, prediction
+
 
 def debug_L3(xuk, Num_meas, model):
     prediction = model.x_Koopman_op(model.x_Encoder(xuk[:, 0, :Num_meas])) + model.u_Koopman_op(model.u_Encoder(xuk[:, 0, :]))
@@ -42,14 +31,14 @@ def debug_L5(xuk, Num_meas, S_p, model):
     prediction = torch.zeros(xuk.shape[0], S_p+1, Num_meas, dtype=torch.float32)
     actual = xuk[:, :(S_p + 1),:Num_meas]
     prediction[:, 0, :] = xuk[:, 0, :Num_meas]
-    x_k = model.x_Koopman_op(model.x_Encoder(xuk[:, 0, :Num_meas])) + model.u_Koopman_op(model.u_Encoder(xuk[:, 0, :]))
-    x_k = x_k[:,:Num_meas]
+    y_k = model.x_Koopman_op(model.x_Encoder(xuk[:, 0, :Num_meas])) + model.u_Koopman_op(model.u_Encoder(xuk[:, 0, :]))
+    x_k = y_k[:,:Num_meas]
     prediction[:, 1, :] = x_k
 
     for m in range(1, S_p):
         xukh = torch.cat((x_k, u[:, m, :]), dim=1)
-        x_k  = model.x_Koopman_op(model.x_Encoder(x_k)) + model.u_Koopman_op(model.u_Encoder(xukh))
-        x_k = x_k[:,:Num_meas]
+        y_k  = model.x_Koopman_op(model.x_Encoder(x_k)) + model.u_Koopman_op(model.u_Encoder(xukh))
+        x_k = y_k[:,:Num_meas]
         prediction[:, m+1, :] = x_k
 
     return actual, prediction
