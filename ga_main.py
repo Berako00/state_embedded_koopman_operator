@@ -65,13 +65,13 @@ mutation_rate = 0.2
 
 # Define parameter ranges For GA
 param_ranges = {
-    "Num_x_Obsv": (4, 20),
-    "Num_u_Obsv": (2, 20),
-    "Num_x_Neurons": (10, 50),
-    "Num_u_Neurons": (10, 50),
-    "Num_hidden_x": (1, 3),  # Shared for both x encoder and decoder
-    "Num_hidden_u": (1, 3),  # Shared for both u encoder and decoder
-    "alpha0": (0.01, 1.0),
+    "Num_x_Obsv": (10, 100),
+    "Num_u_Obsv": (10, 100),
+    "Num_x_Neurons": (128, 128),
+    "Num_u_Neurons": (128, 128),
+    "Num_hidden_x": (3, 3),  # Shared for both x encoder and decoder
+    "Num_hidden_u": (3, 3),  # Shared for both u encoder and decoder
+    "alpha0": (0.001, 0.1),
     "alpha1": (1e-9, 1e-5),
     "alpha2": (1e-18, 1e-12)
 }
