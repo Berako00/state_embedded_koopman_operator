@@ -61,7 +61,7 @@ use_ga = True
 generations = 2
 pop_size = 2
 eps = 5
-tournament_size = 2
+tournament_size = 3
 mutation_rate = 0.2
 
 # Define parameter ranges For GA
@@ -134,7 +134,7 @@ start_training_time = time.time()
 
 
 [Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index,
- Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
+ Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
                                                                     Num_u_Neurons, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=None)
 
 
