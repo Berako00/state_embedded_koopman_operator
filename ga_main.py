@@ -58,9 +58,9 @@ elif system == 'two_link':
 
 # ---- GA Params -------------
 use_ga = True
-generations = 2
-pop_size = 2
-eps = 5
+generations = 6
+pop_size = 10
+eps = 500
 tournament_size = 3
 mutation_rate = 0.2
 
@@ -79,9 +79,9 @@ param_ranges = {
 # ------------------------------
 
 # ---- Define last training param -------
-eps_final = 10      # Number of epochs for final training
+eps_final = 5000      # Number of epochs for final training
 breakout = 10
-check_epoch = 2
+check_epoch = 10
 lr = 1e-3       # Learning rate
 batch_size = 256
 S_p = 30
