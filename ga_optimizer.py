@@ -81,7 +81,7 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
     if random.random() < mutation_rate:
         candidate['Num_hidden_u'] = max(param_ranges["Num_hidden_u"][0], min(param_ranges["Num_hidden_u"][1], candidate['Num_hidden_u'] + random.choice([-1, 1])))
     if random.random() < mutation_rate:
-        new_alpha0 = candidate['alpha0'] * (10 ** random.choice([-2, -1, 1, 2]))
+        new_alpha0 = candidate['alpha0'] * (10 ** random.choice([-1, 1]))
         candidate['alpha0'] = max(param_ranges["alpha0"][0], min(param_ranges["alpha0"][1], new_alpha0))
     if random.random() < mutation_rate:
         new_alpha1 = candidate['alpha1'] * (10 ** random.choice([-2, -1, 1, 2]))
