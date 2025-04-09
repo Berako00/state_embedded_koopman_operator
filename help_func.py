@@ -8,10 +8,11 @@ def get_model_path(i):
     windows_dir1 = r"C:\Users\jokin\Desktop\Uni\Aalborg\Master\Masters_Thesis"
     windows_dir2 = r"C:\Users\Labuser\Desktop\WAPNN"
     linux_dir   = "/home/trarity/master/koopman_control/data"
+    linux_dir2   = "/home/trarity/state_koopman_operator"
     colab_dir1  = "/content/drive/My Drive/Colab Notebooks"
     colab_dir2  = "/content/drive/MyDrive/Colab Notebooks"  
     
-    path1 = os.path.join(linux_dir, f"Autoencoder_model_params{i}.pth")
+    path1 = os.path.join(linux_dir2, f"Autoencoder_model_params{i}.pth")
     path2 = os.path.join(windows_dir1, f"Autoencoder_model_params{i}.pth")
     path3 = os.path.join(colab_dir1, f"Autoencoder_model_params{i}.pth")
     path4 = os.path.join(colab_dir2, f"Autoencoder_model_params{i}.pth")
