@@ -36,8 +36,8 @@ def initialize_population(pop_size, param_ranges, Num_meas, Num_inputs):
             "Num_hidden_x": random.randint(*param_ranges["Num_hidden_x"]),  # Shared x hidden layers
             "Num_hidden_u": random.randint(*param_ranges["Num_hidden_u"]),  # Shared u hidden layers
             "alpha0": random.choice([0.1, 0.01, 0.001]),
-            "alpha1": random.choice(*param_ranges["alpha1"]),
-            "alpha2": random.choice(*param_ranges["alpha2"])
+            "alpha1": random.choice([1e-9, 1e-8, 1e-7, 1e-6, 1e-5]),
+            "alpha2": random.choice([1e-18, 1e-17, 1e-16, 1e-15, 1e-14, 1e-13, 1e-12])
         }
         population.append(candidate)
     return population
@@ -86,7 +86,7 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
         new_alpha1 = candidate['alpha1'] * (10 ** random.choice([-2, -1, 1, 2]))
         candidate['alpha1'] = max(param_ranges["alpha1"][0], min(param_ranges["alpha1"][1], new_alpha1))
     if random.random() < mutation_rate:
-        new_alpha2 = candidate['alpha2'] * (10 ** random.choice([-2, -1, 1, 2]))
+        new_alpha2 = candidate['alpha2'] * (10 ** random.choice([-3, -2, -1, 1, 2, 3]))
         candidate['alpha2'] = max(param_ranges["alpha2"][0], min(param_ranges["alpha2"][1], new_alpha2))
     return candidate
 
