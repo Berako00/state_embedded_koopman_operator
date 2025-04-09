@@ -1,5 +1,6 @@
 import random
 import matplotlib
+import torch
 matplotlib.use("TkAgg")  # Enables interactive plotting
 import matplotlib.pyplot as plt
 
