@@ -35,9 +35,9 @@ def initialize_population(pop_size, param_ranges, Num_meas, Num_inputs):
             "Num_u_Neurons": random.randint(*param_ranges["Num_u_Neurons"]),
             "Num_hidden_x": random.randint(*param_ranges["Num_hidden_x"]),  # Shared x hidden layers
             "Num_hidden_u": random.randint(*param_ranges["Num_hidden_u"]),  # Shared u hidden layers
-            "alpha0": random.uniform(*param_ranges["alpha0"]),
-            "alpha1": random.uniform(*param_ranges["alpha1"]),
-            "alpha2": random.uniform(*param_ranges["alpha2"])
+            "alpha0": random.choice([0.1, 0.01, 0.001]),
+            "alpha1": random.choice(*param_ranges["alpha1"]),
+            "alpha2": random.choice(*param_ranges["alpha2"])
         }
         population.append(candidate)
     return population
