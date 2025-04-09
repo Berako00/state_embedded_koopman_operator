@@ -138,21 +138,15 @@ start_training_time = time.time()
 
 
 ind_loss = int(Lowest_loss_index)
-Lgx = np.asarray(Lgx_Array[ind_loss])
 Lgu = np.asarray(Lgu_Array[ind_loss])
-L3 = np.asarray(L3_Array[ind_loss])
 L4 = np.asarray(L4_Array[ind_loss])
-L5 = np.asarray(L5_Array[ind_loss])
 L6 = np.asarray(L6_Array[ind_loss])
 Running_Losses = np.asarray(Running_Losses_Array[ind_loss])
 
 # Create a dictionary with each array as a column
 data = {
-    "Lgx": Lgx,
     "Lgu": Lgu,
-    "L3": L3,
     "L4": L4,
-    "L5": L5,
     "L6": L6,
     "Running_Losses": Running_Losses
 }
@@ -164,23 +158,20 @@ df = pd.DataFrame(data)
 df.to_excel("training_results.xlsx", index=False)
 
 # Load the parameters of the best model
-checkpoint = torch.load(Best_Model, map_location=device)
-if 'state_dict' in checkpoint:
-    state_dict = checkpoint['state_dict']
-else:
-    state_dict = checkpoint
-model.load_state_dict(state_dict)
+model.load_state_dict(torch.load(Best_Model, map_location=device, weights_only=True))
 print(f"Loaded model parameters from Model: {Best_Model}")
 
-end_time = time.time()
+end_time =  time.time()
+
 total_time = end_time - start_time
 total_training_time = end_time - start_training_time
 
 print(f"Total time is: {total_time}")
 print(f"Total training time is: {total_training_time}")
 
-# ----- Result Plotting and Further Analysis -----
-plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_loss_index)
+# Result Plotting
+
+#plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_loss_index)
 plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 
