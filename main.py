@@ -10,7 +10,7 @@ import random as r
 import time
 import openpyxl
 
-from help_func import self_feeding, enc_self_feeding
+from help_func import self_feeding, enc_self_feeding, load_model
 from nn_structure import AUTOENCODER
 from training import trainingfcn
 from data_generation import DataGenerator, TwoLinkRobotDataGenerator
@@ -46,6 +46,7 @@ if Setup == 'Simple':
     Num_x_Neurons = 30
     Num_u_Neurons = 30
     Num_hidden_x_encoder = 2
+    Num_hidden_x_decoder = 2
     Num_hidden_u_encoder = 2
     Num_hidden_u_decoder = 2
 
@@ -60,13 +61,13 @@ elif Setup == 'Twolink':
 
     Num_meas = 4
     Num_inputs = 2
-    Num_x_Obsv = 19
-    Num_u_Obsv = 8
-    Num_x_Neurons = 50
-    Num_u_Neurons = 50
-    Num_hidden_x_encoder = 2
-    Num_hidden_u_encoder = 2
-    Num_hidden_u_decoder = 2
+    Num_x_Obsv = 17
+    Num_u_Obsv = 18
+    Num_x_Neurons = 128
+    Num_u_Neurons = 128
+    Num_hidden_x_encoder = 3
+    Num_hidden_u_encoder = 3
+    Num_hidden_u_decoder = 3
 
 print(f"Train tensor shape: {train_tensor.shape}")
 print(f"Test tensor shape: {test_tensor.shape}")
@@ -79,7 +80,7 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
 # Training Loop
 start_training_time = time.time()
 
-eps = 5       # Number of epochs per batch size
+eps = 200       # Number of epochs per batch size
 lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
@@ -87,10 +88,10 @@ T = 50
 alpha = [0.001, 10e-9, 10e-14]
 W = 0
 M = 1 # Amount of models you want to run
-check_epoch = 1
+check_epoch = 10
 
 [Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index,
- Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
+ Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
                                                                     Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None)
 
 ind_loss = int(Lowest_loss_index)
@@ -114,7 +115,7 @@ df = pd.DataFrame(data)
 df.to_excel("training_results.xlsx", index=False)
 
 # Load the parameters of the best model
-model.load_state_dict(torch.load(Best_Model, map_location=device, weights_only=True))
+load_model(model, Best_Model, device)
 print(f"Loaded model parameters from Model: {Best_Model}")
 
 end_time =  time.time()
