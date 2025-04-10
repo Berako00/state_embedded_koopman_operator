@@ -8,7 +8,7 @@ from loss_func import total_loss, total_loss_forced, total_loss_unforced
 from nn_structure import AUTOENCODER
 
 
-def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
+def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
                 Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor, test_tensor, M, device=None):
 
   if device is None:
@@ -26,6 +26,18 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_i
 
   Model_path = [get_model_path(i) for i in range(M)]
   Running_Losses_Array, Lgu_Array, L4_Array, L6_Array = [torch.zeros(M, eps) for _ in range(4)]
+
+  hyperparams = {
+        'Num_meas': Num_meas,
+        'Num_inputs': Num_inputs,
+        'Num_x_Obsv': Num_x_Obsv,
+        'Num_x_Neurons': Num_x_Neurons,
+        'Num_u_Obsv': Num_u_Obsv,
+        'Num_u_Neurons': Num_u_Neurons,
+        'Num_hidden_x_encoder': Num_hidden_x_encoder,
+        'Num_hidden_u_encoder': Num_hidden_u_encoder,
+        'dt': dt
+  }
 
   for c_m in range(M):
       model_path_i = Model_path[c_m]
@@ -63,8 +75,6 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_i
           L4_list[e] = running_L4
           L6_list[e] = running_L6
 
-
-
           # Every x epochs, evaluate on the test set and checkpoint if improved.
           if (e + 1) % check_epoch == 0:
               print(f'Model: {c_m}, Epoch: {e+1}, Training Running Loss: {running_loss:.3e}')
@@ -79,10 +89,11 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_i
               # If test loss is lower than the one from the previous checkpoint, save the model.
               if test_running_loss < best_test_loss_checkpoint:
                   best_test_loss_checkpoint = test_running_loss
-                  torch.save(model.state_dict(), model_path_i)
+                  checkpoint = {'state_dict': model.state_dict(), **hyperparams}
+                  torch.save(checkpoint, model_path_i)
                   print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
 
-      model.load_state_dict(torch.load(model_path_i, map_location=device, weights_only=True))
+      load_model(model, model_path_i, device)
 
       Models_loss_list[c_m] = best_test_loss_checkpoint
       Running_Losses_Array[c_m, :] = running_loss_list
