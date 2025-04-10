@@ -11,7 +11,7 @@ import time
 import math
 import openpyxl
 
-from help_func import self_feeding, enc_self_feeding
+from help_func import self_feeding, enc_self_feeding, load_model
 from nn_structure import AUTOENCODER
 from training import trainingfcn
 from data_generation import DataGenerator, TwoLinkRobotDataGenerator
