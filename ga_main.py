@@ -104,14 +104,10 @@ print(f"Train tensor shape: {train_tensor.shape}")
 print(f"Test tensor shape: {test_tensor.shape}")
 print(f"Validation tensor shape: {val_tensor.shape}")
 
-
-
-
 # --- Genetic Algorithm Hyperparameter Optimization ---
 if use_ga:
     # For speed, use a lower number of epochs for evaluation (eps) and fewer generations/population size.
-    best_params = run_genetic_algorithm(check_epoch, breakout, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1, device=device)
-    print(f"Best parameters found: {best_params}")
+    best_params = run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, lr, batch_size, S_p, T, dt, param_ranges=param_ranges, elitism_count=1)
 
     Num_meas      = best_params['Num_meas']
     Num_inputs    = best_params['Num_inputs']
@@ -133,10 +129,7 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
 start_training_time = time.time()
 
 
-[Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index,
- Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
-                                                                    Num_u_Neurons, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=None)
-
+[Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=None)
 
 ind_loss = int(Lowest_loss_index)
 Lgu = np.asarray(Lgu_Array[ind_loss])
@@ -159,20 +152,17 @@ df = pd.DataFrame(data)
 df.to_excel("training_results.xlsx", index=False)
 
 # Load the parameters of the best model
-model.load_state_dict(torch.load(Best_Model, map_location=device, weights_only=True))
+load_model(model, Best_Model, device)
 print(f"Loaded model parameters from Model: {Best_Model}")
 
-end_time =  time.time()
-
+end_time = time.time()
 total_time = end_time - start_time
 total_training_time = end_time - start_training_time
 
 print(f"Total time is: {total_time}")
 print(f"Total training time is: {total_training_time}")
 
-# Result Plotting
-
-#plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_loss_index)
+# ----- Result Plotting and Further Analysis -----
 plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 
