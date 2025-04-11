@@ -61,8 +61,8 @@ elif Setup == 'Twolink':
 
     Num_meas = 4
     Num_inputs = 2
-    Num_x_Obsv = 17
-    Num_u_Obsv = 18
+    Num_x_Obsv = 29
+    Num_u_Obsv = 48
     Num_x_Neurons = 128
     Num_u_Neurons = 128
     Num_hidden_x_encoder = 3
@@ -80,12 +80,12 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
 # Training Loop
 start_training_time = time.time()
 
-eps = 200       # Number of epochs per batch size
+eps = 5       # Number of epochs per batch size
 lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
 T = 50
-alpha = [0.001, 10e-9, 10e-14]
+alpha = [0.001, 1e-5, 1e-14]
 W = 0
 M = 1 # Amount of models you want to run
 check_epoch = 10
