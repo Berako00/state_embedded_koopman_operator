@@ -26,8 +26,8 @@ print("Using device:", device)
 start_time = time.time()
 
 # ---- System Params ----------
-Num_meas = 4
-Num_inputs = 2
+Num_meas = 2
+Num_inputs = 1
 system = 'simple'     # 'two_link' or 'simple'
 # ----------------------------
 
