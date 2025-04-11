@@ -28,7 +28,7 @@ start_time = time.time()
 # ---- System Params ----------
 Num_meas = 4
 Num_inputs = 2
-system = 'two_link'     # 'two_link' or 'simple'
+system = 'simple'     # 'two_link' or 'simple'
 # ----------------------------
 
 # ------- Data Generation Params ----------
@@ -57,17 +57,17 @@ elif system == 'two_link':
   [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max)
 
 # ---- GA Params -------------
-use_ga = False
-generations = 2
-pop_size = 2
-eps = 10
-tournament_size = 2
+use_ga = True
+generations = 6
+pop_size = 10
+eps = 500
+tournament_size = 3
 mutation_rate = 0.2
 
 # Define parameter ranges For GA
 param_ranges = {
-    "Num_x_Obsv": (10, 100),
-    "Num_u_Obsv": (10, 100),
+    "Num_x_Obsv": (2, 20),
+    "Num_u_Obsv": (2, 20),
     "Num_x_Neurons": (128, 128),
     "Num_u_Neurons": (128, 128),
     "Num_hidden_x": (3, 3),  # Shared for both x encoder and decoder
@@ -79,7 +79,7 @@ param_ranges = {
 # ------------------------------
 
 # ---- Define last training param -------
-eps_final = 4      # Number of epochs for final training
+eps_final = 5000      # Number of epochs for final training
 breakout = 10
 check_epoch = 2
 lr = 1e-3       # Learning rate
