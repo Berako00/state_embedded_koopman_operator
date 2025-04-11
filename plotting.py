@@ -1,9 +1,10 @@
 import random
 import matplotlib
+import torch
 matplotlib.use("TkAgg")  # Enables interactive plotting
 import matplotlib.pyplot as plt
 
-from debug_func import debug_L1, debug_L2, debug_L3, debug_L4, debug_L5, debug_L6
+from debug_func import debug_L2, debug_L3, debug_L4, debug_L5, debug_L6
 from help_func import self_feeding, enc_self_feeding
 
 def plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_test_loss_index):
@@ -231,7 +232,8 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
     xuk = val_tensor
 
     # Get the debug outputs (assumes debug_* functions are defined)
-    actual_L1, predicted_L1 = debug_L1(xuk, Num_meas, model)
+    actual_L1  = torch.zeros(val_tensor.shape[0], len(val_tensor[0, :, 0]),val_tensor.shape[2], dtype=torch.float32)
+    predicted_L1 = torch.zeros(val_tensor.shape[0], len(val_tensor[0, :, 0]),val_tensor.shape[2], dtype=torch.float32)
     actual_L2, predicted_L2 = debug_L2(xuk, Num_meas, model)
     actual_L3, predicted_L3 = debug_L3(xuk, Num_meas, model)
     actual_L4, predicted_L4 = debug_L4(xuk, Num_meas, model)
@@ -420,6 +422,7 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
 
     plt.tight_layout()
     plt.show()
+
 
 def plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
 

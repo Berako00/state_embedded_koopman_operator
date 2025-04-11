@@ -7,7 +7,6 @@ class AUTOENCODER(nn.Module):
 
         super(AUTOENCODER, self).__init__()
         self.num_meas = Num_meas
-        self.num_inputs = Num_inputs
 
         self.x_Encoder_In = nn.Linear(Num_meas, Num_x_Neurons)
         self.x_encoder_hidden = nn.ModuleList([nn.Linear(Num_x_Neurons, Num_x_Neurons) for _ in range(Num_hidden_x_encoder)])
@@ -35,13 +34,12 @@ class AUTOENCODER(nn.Module):
                     torch.nn.init.zeros_(m.bias)
 
     def x_Encoder(self, x):
-        x = x[:, :self.num_meas]
-        x_in = x
-        x = F.relu(self.x_Encoder_In(x))
+        x_state = x[:, :self.num_meas]
+        x = F.relu(self.x_Encoder_In(x_state))
         for layer in self.x_encoder_hidden:
             x = F.relu(layer(x))
         x = self.x_Encoder_out(x)
-        x = torch.cat((x_in, x), dim=1)
+        x = torch.cat((x_state, x), dim=1)
         return x
 
     def x_Koopman_op(self, x):

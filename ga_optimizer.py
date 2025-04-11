@@ -3,15 +3,15 @@ import copy
 import torch
 from training import trainingfcn, trainingfcn_mixed
 
-def evaluate_candidate(check_epoch, breakout, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M, device=None):
+def evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, dt, M):
     """
     Evaluates a candidate by running a shortened training using fewer epochs
     and returns the test loss.
     """
     alpha = [candidate['alpha0'], candidate['alpha1'], candidate['alpha2']]
     try:
-        results = trainingfcn(eps, breakout, check_epoch, lr, batch_size, S_p, T, alpha, candidate['Num_meas'], candidate['Num_inputs'], candidate['Num_x_Obsv'], candidate['Num_x_Neurons'], candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
-                                candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor, test_tensor, M, device=device)
+        results = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, candidate['Num_meas'], candidate['Num_inputs'], candidate['Num_x_Obsv'], candidate['Num_x_Neurons'], candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
+                                candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor, test_tensor, M)
 
         # Use only the lowest_loss (first element) for fitness evaluation
         lowest_loss = results[0]
@@ -36,9 +36,9 @@ def initialize_population(pop_size, param_ranges, Num_meas, Num_inputs):
             "Num_u_Neurons": random.randint(*param_ranges["Num_u_Neurons"]),
             "Num_hidden_x": random.randint(*param_ranges["Num_hidden_x"]),  # Shared x hidden layers
             "Num_hidden_u": random.randint(*param_ranges["Num_hidden_u"]),  # Shared u hidden layers
-            "alpha0": random.uniform(*param_ranges["alpha0"]),
-            "alpha1": random.uniform(*param_ranges["alpha1"]),
-            "alpha2": random.uniform(*param_ranges["alpha2"])
+            "alpha0": random.choice([0.1, 0.01, 0.001]),
+            "alpha1": random.choice([1e-9, 1e-8, 1e-7, 1e-6, 1e-5]),
+            "alpha2": random.choice([1e-18, 1e-17, 1e-16, 1e-15, 1e-14, 1e-13, 1e-12])
         }
         population.append(candidate)
     return population
@@ -81,18 +81,17 @@ def mutate(candidate, param_ranges, mutation_rate=0.1):
     if random.random() < mutation_rate:
         candidate['Num_hidden_u'] = max(param_ranges["Num_hidden_u"][0], min(param_ranges["Num_hidden_u"][1], candidate['Num_hidden_u'] + random.choice([-1, 1])))
     if random.random() < mutation_rate:
-        new_alpha0 = candidate['alpha0'] * (10 ** random.gauss(0, 0.1))
+        new_alpha0 = candidate['alpha0'] * (10 ** random.choice([-1, 1]))
         candidate['alpha0'] = max(param_ranges["alpha0"][0], min(param_ranges["alpha0"][1], new_alpha0))
     if random.random() < mutation_rate:
-        new_alpha1 = candidate['alpha1'] * (10 ** random.gauss(0, 0.1))
+        new_alpha1 = candidate['alpha1'] * (10 ** random.choice([-2, -1, 1, 2]))
         candidate['alpha1'] = max(param_ranges["alpha1"][0], min(param_ranges["alpha1"][1], new_alpha1))
     if random.random() < mutation_rate:
-        new_alpha2 = candidate['alpha2'] * (10 ** random.gauss(0, 0.1))
+        new_alpha2 = candidate['alpha2'] * (10 ** random.choice([-3, -2, -1, 1, 2, 3]))
         candidate['alpha2'] = max(param_ranges["alpha2"][0], min(param_ranges["alpha2"][1], new_alpha2))
     return candidate
 
-
-def run_genetic_algorithm(check_epoch, breakout, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, M=1, param_ranges=None, elitism_count=1, device=None):
+def run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations=5, pop_size=10, eps=50, lr=1e-3, batch_size=256, S_p=30, T = 50, dt = 0.02, M=1, param_ranges=None, elitism_count=1):
     """
     Runs the genetic algorithm over a number of generations and returns the best candidate.
 
@@ -108,7 +107,6 @@ def run_genetic_algorithm(check_epoch, breakout, Num_meas, Num_inputs, train_ten
     if param_ranges is None:
         raise ValueError("Parameter ranges must be provided.")
 
-    T = train_tensor.shape[1]  # Assuming shape: (num_samples, T, features)
     population = initialize_population(pop_size, param_ranges, Num_meas, Num_inputs)
 
     best_candidate = None
@@ -132,7 +130,7 @@ def run_genetic_algorithm(check_epoch, breakout, Num_meas, Num_inputs, train_ten
                 print(f"Candidate (best from previous generation): {candidate} | Loss: {loss} (evaluation skipped)")
 
             else:
-              loss = evaluate_candidate(check_epoch, breakout, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, M, device)
+              loss = evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, dt, M)
               fitness = -loss  # Lower loss => higher fitness
               print(f"Candidate: {candidate} | Loss: {loss}")
 

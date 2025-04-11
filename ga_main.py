@@ -5,12 +5,13 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import random as r
 import time
 import math
 import openpyxl
 
-from help_func import self_feeding, enc_self_feeding
+from help_func import self_feeding, enc_self_feeding, load_model
 from nn_structure import AUTOENCODER
 from training import trainingfcn
 from data_generation import DataGenerator, TwoLinkRobotDataGenerator
@@ -56,29 +57,29 @@ elif system == 'two_link':
   [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max)
 
 # ---- GA Params -------------
-use_ga = True
+use_ga = False
 generations = 2
 pop_size = 2
-eps = 5
+eps = 10
 tournament_size = 2
 mutation_rate = 0.2
 
 # Define parameter ranges For GA
 param_ranges = {
-    "Num_x_Obsv": (4, 20),
-    "Num_u_Obsv": (2, 20),
-    "Num_x_Neurons": (10, 50),
-    "Num_u_Neurons": (10, 50),
-    "Num_hidden_x": (1, 3),  # Shared for both x encoder and decoder
-    "Num_hidden_u": (1, 3),  # Shared for both u encoder and decoder
-    "alpha0": (0.01, 1.0),
+    "Num_x_Obsv": (10, 100),
+    "Num_u_Obsv": (10, 100),
+    "Num_x_Neurons": (128, 128),
+    "Num_u_Neurons": (128, 128),
+    "Num_hidden_x": (3, 3),  # Shared for both x encoder and decoder
+    "Num_hidden_u": (3, 3),  # Shared for both u encoder and decoder
+    "alpha0": (0.001, 0.1),
     "alpha1": (1e-9, 1e-5),
     "alpha2": (1e-18, 1e-12)
 }
 # ------------------------------
 
 # ---- Define last training param -------
-eps_final = 10      # Number of epochs for final training
+eps_final = 4      # Number of epochs for final training
 breakout = 10
 check_epoch = 2
 lr = 1e-3       # Learning rate
@@ -89,13 +90,13 @@ W = 0
 M = 1  # Amount of models you want to run
 
 if not use_ga:
-    Num_x_Obsv    = 17
-    Num_u_Obsv    = 18
-    Num_x_Neurons = 45
-    Num_u_Neurons = 50
-    Num_hidden_x  = 1
-    Num_hidden_u  = 1
-    alpha         = [0.656327, 5.1215e-6, 5.7252e-13]
+    Num_x_Obsv    = 29
+    Num_u_Obsv    = 48
+    Num_x_Neurons = 128
+    Num_u_Neurons = 128
+    Num_hidden_x  = 3
+    Num_hidden_u  = 3
+    alpha         = [0.001, 1e-5, 1e-14]
 # ---------------------------------------
 
 
@@ -103,14 +104,10 @@ print(f"Train tensor shape: {train_tensor.shape}")
 print(f"Test tensor shape: {test_tensor.shape}")
 print(f"Validation tensor shape: {val_tensor.shape}")
 
-
-
-
 # --- Genetic Algorithm Hyperparameter Optimization ---
 if use_ga:
     # For speed, use a lower number of epochs for evaluation (eps) and fewer generations/population size.
-    best_params = run_genetic_algorithm(check_epoch, breakout, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, param_ranges=param_ranges, elitism_count=1, device=device)
-    print(f"Best parameters found: {best_params}")
+    best_params = run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_tensor, tournament_size, mutation_rate, generations, pop_size, eps, lr, batch_size, S_p, T, dt, param_ranges=param_ranges, elitism_count=1)
 
     Num_meas      = best_params['Num_meas']
     Num_inputs    = best_params['Num_inputs']
@@ -132,24 +129,18 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
 start_training_time = time.time()
 
 
-[Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=device)
+[Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index, Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps_final, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x, Num_hidden_u, Num_hidden_u, train_tensor, test_tensor, M, device=None)
 
 ind_loss = int(Lowest_loss_index)
-Lgx = np.asarray(Lgx_Array[ind_loss])
 Lgu = np.asarray(Lgu_Array[ind_loss])
-L3 = np.asarray(L3_Array[ind_loss])
 L4 = np.asarray(L4_Array[ind_loss])
-L5 = np.asarray(L5_Array[ind_loss])
 L6 = np.asarray(L6_Array[ind_loss])
 Running_Losses = np.asarray(Running_Losses_Array[ind_loss])
 
 # Create a dictionary with each array as a column
 data = {
-    "Lgx": Lgx,
     "Lgu": Lgu,
-    "L3": L3,
     "L4": L4,
-    "L5": L5,
     "L6": L6,
     "Running_Losses": Running_Losses
 }
@@ -161,12 +152,7 @@ df = pd.DataFrame(data)
 df.to_excel("training_results.xlsx", index=False)
 
 # Load the parameters of the best model
-checkpoint = torch.load(Best_Model, map_location=device)
-if 'state_dict' in checkpoint:
-    state_dict = checkpoint['state_dict']
-else:
-    state_dict = checkpoint
-model.load_state_dict(state_dict)
+load_model(model, Best_Model, device)
 print(f"Loaded model parameters from Model: {Best_Model}")
 
 end_time = time.time()
@@ -177,7 +163,6 @@ print(f"Total time is: {total_time}")
 print(f"Total training time is: {total_training_time}")
 
 # ----- Result Plotting and Further Analysis -----
-plot_losses(Lgx_Array, Lgu_Array, L3_Array, L4_Array, L5_Array, L6_Array, Lowest_loss_index)
 plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 plot_results(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T)
 
