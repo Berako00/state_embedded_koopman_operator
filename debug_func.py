@@ -8,7 +8,9 @@ def debug_L2(xuk, Num_meas, model):
     prediction = torch.zeros(xuk.shape[0], len(xuk[0, :, 0]),xuk.shape[2]-Num_meas, dtype=torch.float32)
 
     for m in range(0,len(xuk[0, :, 0])):
-        prediction[:, m, :] = model.u_Decoder(model.u_Encoder(xuk[:, m, :]))
+        v = model.u_Encoder(xuk[:, m, :])
+        xv = torch.cat((v, xuk[:, m, :Num_meas]), dim=1)
+        prediction[:, m, :] = model.u_Decoder(xv)
         actual[:, m, :]  = xuk[:, m, Num_meas:]
     return actual, prediction
 
