@@ -8,7 +8,9 @@ def custom_loss(x_pred, x_target):
 def loss_2(xuk, Num_meas, model):
   total_g_loss = torch.tensor(0.0, device=xuk[:, 0, :].device)
   for m in range(0,len(xuk[0, :, 0])):
+    print("xuk", xuk[:, m, :].shape)
     v = model.u_Encoder(xuk[:, m, :])
+    print("v", v.shape)
     xv = torch.cat((v, xuk[:, m, :Num_meas]), dim=1)
     pred = model.u_Decoder(xv)
     total_g_loss += F.mse_loss(pred, xuk[:, m, Num_meas:], reduction='mean')
