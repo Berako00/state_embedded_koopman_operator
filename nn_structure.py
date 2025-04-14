@@ -20,7 +20,7 @@ class AUTOENCODER(nn.Module):
 
         self.u_Koopman = nn.Linear(Num_u_Obsv, Num_x_Obsv + Num_meas, bias=False)
 
-        self.u_Decoder_In = nn.Linear(Num_u_Obsv, Num_u_Neurons)
+        self.u_Decoder_In = nn.Linear(Num_u_Obsv + Num_meas, Num_u_Neurons)
         self.u_decoder_hidden = nn.ModuleList([nn.Linear(Num_u_Neurons, Num_u_Neurons) for _ in range(Num_hidden_u_decoder)])
         self.u_Decoder_out = nn.Linear(Num_u_Neurons, Num_inputs)
 
