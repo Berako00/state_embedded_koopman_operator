@@ -26,8 +26,7 @@ print("Using device:", device)
 start_time = time.time()
 
 # ---- System Params ----------
-Num_meas = 4
-Num_inputs = 2
+
 system = 'two_link'     # 'two_link' or 'simple'
 # ----------------------------
 
@@ -42,12 +41,19 @@ if system == 'simple':
   x2range = x1range
   mu = -0.05
   lam = -1
+
+  Num_meas = 2
+  Num_inputs = 1
+  
 elif system == 'two_link':
   q1_range = (-math.pi, math.pi)
   q2_range = (-math.pi, math.pi)
   dq1_range = (-1, 1)
   dq2_range = dq1_range
   tau_max = 7.5
+
+  Num_meas = 4
+  Num_inputs = 2
 # -----------------------------------------
 
 if system == 'simple':
