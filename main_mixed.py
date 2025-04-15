@@ -51,7 +51,7 @@ if Setup == 'Simple':
 elif Setup == 'Twolink':
     q1_range = (-np.pi, np.pi)
     q2_range = q1_range
-    dq1_range = (-1, 1)
+    dq1_range = (-6, 6)
     dq2_range = dq1_range
     seed = 1
     [train_tensor_unforced, train_tensor_forced, test_tensor_unforced, test_tensor_forced, val_tensor] = TwoLinkRobotDataGenerator_mixed(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max = 7.5)
@@ -60,13 +60,13 @@ elif Setup == 'Twolink':
 
     Num_meas = 4
     Num_inputs = 2
-    Num_x_Obsv = 17
-    Num_u_Obsv = 18
-    Num_x_Neurons = 45
-    Num_u_Neurons = 50
-    Num_hidden_x_encoder = 1
-    Num_hidden_u_encoder = 1
-    Num_hidden_u_decoder = 1
+    Num_x_Obsv = 29
+    Num_u_Obsv = 48
+    Num_x_Neurons = 128
+    Num_u_Neurons = 128
+    Num_hidden_x_encoder = 3
+    Num_hidden_u_encoder = 3
+    Num_hidden_u_decoder = 3
 
 print(f"Train tensor for unforced system shape: {train_tensor_unforced.shape}")
 print(f"Train tensor with force shape: {train_tensor_forced.shape}")
