@@ -81,15 +81,15 @@ model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
 # Training Loop
 start_training_time = time.time()
 
-eps = 700 # Number of epochs per batch size
-lr = 1e-3 # Learning rate
+eps_final = 6     # Number of epochs for final training
+breakout = 10
+check_epoch = 2
+lr = 1e-3       # Learning rate
 batch_size = 256
 S_p = 30
-T = len(train_tensor_unforced[0, :, :])
-alpha = [0.1, 10e-7, 10e-15]
+T = len(train_tensor[0, :, :])
 W = 0
-M = 1 # Amount of models you want to run
-check_epoch = 2
+M = 1  # Amount of models you want to run
 
 [Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index,
           Running_Losses_Array, Lgu_forced_Array,
