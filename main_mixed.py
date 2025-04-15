@@ -94,12 +94,9 @@ check_epoch = 2
 [Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index,
           Running_Losses_Array, Lgu_forced_Array,
           L4_unforced_Array, L6_unforced_Array,
-          L4_forced_Array, L6_forced_Array] = trainingfcn_mixed(eps, check_epoch, lr, batch_size, S_p, T, alpha,
-                                                                        Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
-                                                                        Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder,
-                                                                         Num_hidden_u_encoder, Num_hidden_u_decoder,
-                                                                        train_tensor_unforced, train_tensor_forced, test_tensor_unforced,
-                                                                        test_tensor_forced, M)
+          L4_forced_Array, L6_forced_Array] = trainingfcn_mixed(eps,check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv,
+                      Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor_unforced, train_tensor_forced,
+                      test_tensor_unforced, test_tensor_forced, M, device=None)
 # Load the parameters of the best model
 load_model(model, Best_Model, device)
 print(f"Loaded model parameters from Model: {Best_Model}")
