@@ -10,7 +10,7 @@ import numpy as np
 import random as r
 import time
 
-from help_func import self_feeding, enc_self_feeding
+from help_func import self_feeding, enc_self_feeding, load_model
 from nn_structure import AUTOENCODER
 from training import trainingfcn_mixed
 from data_generation import DataGenerator_mixed
@@ -100,12 +100,7 @@ check_epoch = 2
                                                                         train_tensor_unforced, train_tensor_forced, test_tensor_unforced,
                                                                         test_tensor_forced, M)
 # Load the parameters of the best model
-checkpoint = torch.load(Best_Model, map_location=device)
-if 'state_dict' in checkpoint:
-    state_dict = checkpoint['state_dict']
-else:
-    state_dict = checkpoint
-model.load_state_dict(state_dict)
+load_model(model, Best_Model, device)
 print(f"Loaded model parameters from Model: {Best_Model}")
 
 
