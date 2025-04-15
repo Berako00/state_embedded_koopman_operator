@@ -3,12 +3,13 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
-import matplotlib
-matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import random as r
 import time
+import math
+import openpyxl
 
 from help_func import self_feeding, enc_self_feeding, load_model
 from nn_structure import AUTOENCODER
