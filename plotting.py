@@ -385,7 +385,7 @@ def plot_debug(model, val_tensor, train_tensor, S_p, Num_meas, Num_x_Obsv, T):
             ax = axs[var, i]
             ax.plot(time_steps, actual_traj[:, var].cpu().numpy(), 'o-', label=f'True')
             ax.plot(time_steps, predicted_traj[:, var].detach().cpu().numpy(), 'x--', label=f'Predicted')
-            ax.set_title(f"Validation L6, Sample {idx} (x{var+1})", fontsize=title_fontsize)
+            ax.set_title(f"Validation L5, Sample {idx} (x{var+1})", fontsize=title_fontsize)
             ax.set_xlabel("Time step", fontsize=label_fontsize)
             ax.set_ylabel(f"x{var+1}", fontsize=label_fontsize)
             ax.legend(fontsize=legend_fontsize)
