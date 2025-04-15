@@ -90,6 +90,7 @@ S_p = 30
 T = len(train_tensor[0, :, :])
 W = 0
 M = 1  # Amount of models you want to run
+alpha = [0.001, 1e-5, 1e-14]
 
 [Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index,
           Running_Losses_Array, Lgu_forced_Array,
