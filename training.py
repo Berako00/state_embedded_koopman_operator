@@ -115,10 +115,12 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, N
 ###
 
 def trainingfcn_mixed(eps,check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, Num_inputs, Num_x_Obsv,
-                      Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder,   Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor_unforced, train_tensor_forced,
+                      Num_x_Neurons, Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder, train_tensor_unforced, train_tensor_forced,
                       test_tensor_unforced, test_tensor_forced, M, device=None):
   if device is None:
       device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+  pin_memory = True if device.type == "cuda" else False
 
   hyperparams = {
         'Num_meas': Num_meas,
@@ -130,15 +132,6 @@ def trainingfcn_mixed(eps,check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, 
         'Num_hidden_x_encoder': Num_hidden_x_encoder,
         'Num_hidden_u_encoder': Num_hidden_u_encoder
   }
-  model = AUTOENCODER(Num_meas, Num_inputs, Num_x_Obsv,
-                      Num_x_Neurons, Num_u_Obsv, Num_u_Neurons,
-                      Num_hidden_x_encoder, Num_hidden_u_encoder, Num_hidden_u_decoder).to(device)
-  checkpoint = {
-      'state_dict': model.state_dict(),
-      **hyperparams  # Unpack the hyperparameters into the dictionary
-  }
-
-  pin_memory = True if device.type == "cuda" else False
 
   train_unforced_dataset = TensorDataset(train_tensor_unforced)
   train_unforced_loader = DataLoader(train_unforced_dataset, batch_size=batch_size, shuffle=True, pin_memory=pin_memory)
@@ -153,11 +146,7 @@ def trainingfcn_mixed(eps,check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, 
   test_forced_loader = DataLoader(test_forced_dataset, batch_size=batch_size, shuffle=True, pin_memory=pin_memory)
 
   Models_loss_list = torch.zeros(M)
-  [Running_Losses_Array, Lgx_unforced_Array, Lgu_forced_Array,
-   L3_unforced_Array, L4_unforced_Array,
-   L3_forced_Array, L4_forced_Array,
-   L5_unforced_Array, L6_unforced_Array,
-   L5_forced_Array, L6_forced_Array] = [torch.zeros(M, eps) for _ in range(11)]
+  [Running_Losses_Array, Lgu_forced_Array, L4_unforced_Array, L4_forced_Array, L6_unforced_Array, L6_forced_Array] = [torch.zeros(M, eps) for _ in range(6)]
 
   c_m = 0
 
@@ -174,9 +163,9 @@ def trainingfcn_mixed(eps,check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, 
       optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
       best_test_loss_checkpoint = float('inf')
 
-      [running_loss_list, Lgx_unforced_list, Lgu_forced_list,
-       L3_unforced_list, L4_unforced_list, L3_forced_list, L4_forced_list,
-       L5_unforced_list, L6_unforced_list, L5_forced_list, L6_forced_list] = [torch.zeros(eps) for _ in range(11)]
+      [running_loss_list, Lgu_forced_list,
+       L4_unforced_list, L4_forced_list,
+       L6_unforced_list, L6_forced_list] = [torch.zeros(eps) for _ in range(6)]
 
       #First train the unforced system so do not compute
       set_requires_grad(list(model.u_Encoder_In.parameters()) +
@@ -194,7 +183,7 @@ def trainingfcn_mixed(eps,check_epoch, lr, batch_size, S_p, T, alpha, Num_meas, 
           for (batch_x,) in train_unforced_loader:
               batch_x = batch_x.to(device, non_blocking=True)
               optimizer.zero_grad()
-              [loss, L_gx, L_3, L_4, L_5, L_6] = total_loss_unforced(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
+              [loss, L_gu, L_3, L_4, L_5, L_6] = total_loss_unforced(alpha, batch_x, Num_meas, Num_x_Obsv, T, S_p, model)
 
               loss.backward()
               optimizer.step()
