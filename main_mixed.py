@@ -91,9 +91,9 @@ M = 1 # Amount of models you want to run
 check_epoch = 2
 
 [Lowest_loss, Models_loss_list, Best_Model, Lowest_loss_index,
- Running_Losses_Array, Lgx_unforced_Array, Lgu_forced_Array,
- L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array,
- L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array] = trainingfcn_mixed(eps, check_epoch, lr, batch_size, S_p, T, alpha,
+          Running_Losses_Array, Lgu_forced_Array,
+          L4_unforced_Array, L6_unforced_Array,
+          L4_forced_Array, L6_forced_Array] = trainingfcn_mixed(eps, check_epoch, lr, batch_size, S_p, T, alpha,
                                                                         Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons,
                                                                         Num_u_Obsv, Num_u_Neurons, Num_hidden_x_encoder,
                                                                          Num_hidden_u_encoder, Num_hidden_u_decoder,
@@ -120,7 +120,6 @@ print(f"Total training time is: {total_training_time}")
 
 # Result Plotting
 
-plot_losses_mixed(Lgx_unforced_Array, Lgu_forced_Array, L3_forced_Array, L4_forced_Array, L5_forced_Array, L6_forced_Array,
-                      L3_unforced_Array, L4_unforced_Array, L5_unforced_Array, L6_unforced_Array, Lowest_loss_index)
-plot_debug(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
-plot_results(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
+
+#plot_debug(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
+#plot_results(model, val_tensor, train_tensor_forced, S_p, Num_meas, Num_x_Obsv, T)
