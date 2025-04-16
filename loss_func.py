@@ -45,29 +45,11 @@ def total_loss(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
     return L_total, L_gu, L_4, L_6
 
 
-
-def loss_3_uf(xuk, Num_meas, model):
-    pred_3 = model.x_Koopman_op(model.x_Encoder(xuk[:, 0, :Num_meas]))
-    pred_3 = pred_3[:,:Num_meas]
-    L_3 = F.mse_loss(pred_3, xuk[:, 1, :Num_meas], reduction='mean')
-    return L_3, pred_3
-
 def loss_4_uf(xuk, Num_meas, model):
     pred_4 = model.x_Koopman_op(model.x_Encoder(xuk[:, 0, :Num_meas]))
     L_4 = F.mse_loss(pred_4, model.x_Encoder(xuk[:, 1, :Num_meas]), reduction='mean')
     return L_4, pred_4
 
-def loss_5_uf(xuk, Num_meas, S_p, L_3, pred_3, model):
-    total_5_loss = L_3
-    x_k = pred_3
-
-    for m in range(1, S_p):
-        x_k  = model.x_Koopman_op(model.x_Encoder(x_k))
-        x_k = x_k[:,:Num_meas]
-        total_5_loss += F.mse_loss(x_k, xuk[:, m+1, :Num_meas], reduction='mean')
-
-    L_5 = total_5_loss / S_p
-    return L_5
 
 def loss_6_uf(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model):
     total_6_loss = L_4
@@ -83,25 +65,18 @@ def loss_6_uf(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model):
 
 def total_loss_unforced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
 
-    L_gx = loss_1(xuk, Num_meas, model)
-
-    [L_3, pred_3] = loss_3_uf(xuk, Num_meas, model)
     [L_4, pred_4]  = loss_4_uf(xuk, Num_meas, model)
-    L_5 = loss_5_uf(xuk, Num_meas, S_p, L_3, pred_3, model)
     L_6 = loss_6_uf(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model)
 
     L_total = alpha[0]*(L_gx) +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
 
-    return L_total, L_gx, L_3, L_4, L_5, L_6
+    return L_total, L_4, L_6
 
 def total_loss_forced(alpha, xuk, Num_meas, Num_x_Obsv, T, S_p, model):
-
     L_gu = loss_2(xuk, Num_meas, model)
-    [L_3, pred_3] = loss_3(xuk, Num_meas, model)
     [L_4, pred_4]  = loss_4(xuk, Num_meas, model)
-    L_5 = loss_5(xuk, Num_meas, S_p, L_3, pred_3, model)
     L_6 = loss_6(xuk, Num_meas, Num_x_Obsv, T, L_4, pred_4, model)
 
-    L_total = alpha[0]* L_gu +  alpha[1]*(L_3 + L_4)+ alpha[2]*(L_5 + L_6)
+    L_total = alpha[0]* L_gu +  alpha[1]*L_4 + alpha[2]*L_6
 
-    return L_total, L_gu, L_3, L_4, L_5, L_6
+    return L_total, L_gu, L_4, L_6
