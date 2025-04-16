@@ -27,7 +27,7 @@ start_time = time.time()
 
 # ---- System Params ----------
 
-system = 'two_link'     # 'two_link' or 'simple'
+system = 'simple'     # 'two_link' or 'simple'
 # ----------------------------
 
 # ------- Data Generation Params ----------
