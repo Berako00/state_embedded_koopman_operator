@@ -31,16 +31,16 @@ system = 'two_link'     # 'two_link' or 'simple'
 # ----------------------------
 
 # ------- Data Generation Params ----------
-numICs = 20000
+numICs = 30000
 T_step = 50
 dt = 0.02
 seed = 1
 
 # ---- GA Params -------------
-use_ga = False
-generations = 6
+use_ga = True
+generations = 2
 pop_size = 10
-eps = 500
+eps = 10
 tournament_size = 3
 mutation_rate = 0.2
 
@@ -102,9 +102,9 @@ elif system == 'two_link':
 
 
 # ---- Define last training param -------
-eps_final = 5000      # Number of epochs for final training
+eps_final = 1      # Number of epochs for final training
 breakout = 10
-check_epoch = 10
+check_epoch = 5
 lr = 1e-3       # Learning rate
 batch_size = 256
 S_p = 30
