@@ -90,21 +90,21 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, N
               elapsed_str = str(datetime.timedelta(seconds=int(elapsed_sec)))
               eta_str     = str(datetime.timedelta(seconds=int(eta_sec)))
 
-              print(f"Epoch {e+1}/{eps}, "f"Train Loss: {running_loss:.3e}, "f"Elapsed: {elapsed_str}, ETA: {eta_str}")
+              # print(f"Epoch {e+1}/{eps}, "f"Train Loss: {running_loss:.3e}, "f"Elapsed: {elapsed_str}, ETA: {eta_str}")
               model.eval()
               test_running_loss = 0.0
               for (batch_x,) in test_loader:
                   batch_x = batch_x.to(device, non_blocking=True)
                   _, loss = enc_self_feeding(model, batch_x, Num_meas)
                   test_running_loss += loss.item()
-              print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
+              # print(f'Checkpoint at Epoch {e+1}: Test Running Loss: {test_running_loss:.3e}')
 
               # If test loss is lower than the one from the previous checkpoint, save the model.
               if test_running_loss < best_test_loss_checkpoint:
                   best_test_loss_checkpoint = test_running_loss
-                  checkpoint = {'state_dict': model.state_dict(), **hyperparams}
-                  torch.save(checkpoint, model_path_i)
-                  print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
+                  # checkpoint = {'state_dict': model.state_dict(), **hyperparams}
+                  # torch.save(checkpoint, model_path_i)
+                  # print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
 
       load_model(model, model_path_i, device)
 
@@ -118,7 +118,7 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, N
   Lowest_loss = Models_loss_list.min().item()
 
   Lowest_loss_index = int((Models_loss_list == Models_loss_list.min()).nonzero(as_tuple=False)[0].item())
-  print(f"The best model has a running loss of {Lowest_loss:.3e} and is model nr. {Lowest_loss_index}")
+  # print(f"The best model has a running loss of {Lowest_loss:.3e} and is model nr. {Lowest_loss_index}")
 
   Best_Model = Model_path[Lowest_loss_index]
 
