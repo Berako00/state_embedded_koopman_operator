@@ -414,10 +414,10 @@ def TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, 
 
     # Create test, validation, and training tensors with different percentages of numICs
     seed = 1
-    test_tensor = generate_two_link_lab_data(q1_range, q2_range, dq1_range, dq2_range, round(0.1 * numICs), T, dt, seed, tau_max)
+    test_tensor = generate_two_link_lab_data(q1_range, q2_range, dq1_range, dq2_range, round(0.2 * numICs), T, dt, seed, tau_max)
 
     seed = 2
-    val_tensor = generate_two_link_lab_data(q1_range, q2_range, dq1_range, dq2_range, round(0.2 * numICs), T, dt, seed, tau_max)
+    val_tensor = generate_two_link_lab_data(q1_range, q2_range, dq1_range, dq2_range, round(0.1 * numICs), T, dt, seed, tau_max)
 
     seed = 3
     train_tensor = generate_two_link_lab_data(q1_range, q2_range, dq1_range, dq2_range, round(0.7 * numICs), T, dt, seed, tau_max)
