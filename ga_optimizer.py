@@ -2,6 +2,8 @@ import random
 import copy
 import torch
 from training import trainingfcn, trainingfcn_mixed
+import concurrent.futures
+from multiprocessing import get_context
 
 def evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, dt, M, device):
     """
@@ -127,38 +129,40 @@ def run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_
     if gpu_count == 0:
         raise RuntimeError("No GPUs found!")
     devices = list(range(gpu_count))
-
+    
+    ctx = get_context("spawn")
     for gen in range(generations):
-        # For generations after the first, store the best candidate from the previous generation
-        
-        if gen > 0:
-            prev_best_candidate = best_candidate
-            prev_best_fitness = best_fitness
-
-        print(f"Generation {gen+1}/{generations}")
-        # launch one worker per individual, mapping them round‑robin to GPUs
-        fitnesses = []
-        import concurrent.futures
-
-        with concurrent.futures.ProcessPoolExecutor(max_workers=len(devices)) as execr:
-            # submit all candidates
-            futures = []
+        triplets = []
+        with concurrent.futures.ProcessPoolExecutor(
+                max_workers=len(devices),
+                mp_context=ctx
+        ) as execr:
+            # submit each candidate with its assigned device
             for idx, candidate in enumerate(population):
                 dev = devices[idx % len(devices)]
-                futures.append(execr.submit(
+                fut = execr.submit(
                     evaluate_candidate,
                     check_epoch, candidate, train_tensor, test_tensor,
                     eps, lr, batch_size, S_p, T, dt, M, dev
-                ))
-            # collect results
-            for future, candidate in zip(futures, population):
-                loss = future.result()
+                )
+                triplets.append((fut, candidate, dev))
+
+            # wait for them all to finish (barrier)
+            concurrent.futures.wait(
+                [t[0] for t in triplets],
+                return_when=concurrent.futures.ALL_COMPLETED
+            )
+
+            # collect losses
+            fitnesses = []
+            for fut, cand, dev in triplets:
+                loss = fut.result()  # now guaranteed no CUDA errors
                 fitness = -loss
+                print(f"[GPU {dev}] Candidate: {cand} | Loss: {loss}")
                 fitnesses.append(fitness)
-                print(f"[GPU {devices[futures.index(future)]}] Candidate: {candidate} | Loss: {loss}")
                 if fitness > best_fitness:
                     best_fitness = fitness
-                    best_candidate = candidate
+                    best_candidate = cand
 
         # Sort population by fitness (highest first)
         sorted_population = [cand for cand, fit in sorted(zip(population, fitnesses), key=lambda x: x[1], reverse=True)]
