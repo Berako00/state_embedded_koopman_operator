@@ -106,7 +106,7 @@ def trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, N
                   # torch.save(checkpoint, model_path_i)
                   # print(f'Checkpoint at Epoch {e+1}: New best test loss, model saved.')
 
-      load_model(model, model_path_i, device)
+      # load_model(model, model_path_i, device)
 
       Models_loss_list[c_m] = best_test_loss_checkpoint
       Running_Losses_Array[c_m, :] = running_loss_list
