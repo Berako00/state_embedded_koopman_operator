@@ -3,15 +3,24 @@ import copy
 import torch
 from training import trainingfcn, trainingfcn_mixed
 
-def evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, dt, M):
+def evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, dt, M, device):
     """
     Evaluates a candidate by running a shortened training using fewer epochs
     and returns the test loss.
     """
     alpha = [candidate['alpha0'], candidate['alpha1'], candidate['alpha2']]
     try:
-        results = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, candidate['Num_meas'], candidate['Num_inputs'], candidate['Num_x_Obsv'], candidate['Num_x_Neurons'], candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
-                                candidate['Num_hidden_x'], candidate['Num_hidden_u'], candidate['Num_hidden_u'], train_tensor, test_tensor, M)
+        # pin this process to the right GPU
+        torch.cuda.set_device(device)
+        results = trainingfcn(
+            eps, check_epoch, lr, batch_size, S_p, T, dt, alpha,
+            candidate['Num_meas'], candidate['Num_inputs'],
+            candidate['Num_x_Obsv'], candidate['Num_x_Neurons'],
+            candidate['Num_u_Obsv'], candidate['Num_u_Neurons'],
+            candidate['Num_hidden_x'], candidate['Num_hidden_u'],
+            candidate['Num_hidden_u'], train_tensor, test_tensor, M,
+            device=torch.device(f'cuda:{device}')
+        )
 
         # Use only the lowest_loss (first element) for fitness evaluation
         lowest_loss = results[0]
@@ -113,31 +122,43 @@ def run_genetic_algorithm(check_epoch, Num_meas, Num_inputs, train_tensor, test_
     best_fitness = -float('inf')  # Fitness = -loss, so higher fitness is better
 
 
+    # get all GPU indices
+    gpu_count = torch.cuda.device_count()
+    if gpu_count == 0:
+        raise RuntimeError("No GPUs found!")
+    devices = list(range(gpu_count))
+
     for gen in range(generations):
         # For generations after the first, store the best candidate from the previous generation
+        
         if gen > 0:
             prev_best_candidate = best_candidate
             prev_best_fitness = best_fitness
 
         print(f"Generation {gen+1}/{generations}")
+        # launch one worker per individual, mapping them round‑robin to GPUs
         fitnesses = []
-        # Evaluate fitness for each candidate
-        for candidate in population:
-           # Skip evaluation if candidate is the best from the previous generation
-            if gen > 0 and candidate == prev_best_candidate:
-                fitness = prev_best_fitness
-                loss = -fitness  # Since fitness = -loss
-                print(f"Candidate (best from previous generation): {candidate} | Loss: {loss} (evaluation skipped)")
+        import concurrent.futures
 
-            else:
-              loss = evaluate_candidate(check_epoch, candidate, train_tensor, test_tensor, eps, lr, batch_size, S_p, T, dt, M)
-              fitness = -loss  # Lower loss => higher fitness
-              print(f"Candidate: {candidate} | Loss: {loss}")
-
-            fitnesses.append(fitness)
-            if fitness > best_fitness:
-                best_fitness = fitness
-                best_candidate = candidate
+        with concurrent.futures.ProcessPoolExecutor(max_workers=len(devices)) as execr:
+            # submit all candidates
+            futures = []
+            for idx, candidate in enumerate(population):
+                dev = devices[idx % len(devices)]
+                futures.append(execr.submit(
+                    evaluate_candidate,
+                    check_epoch, candidate, train_tensor, test_tensor,
+                    eps, lr, batch_size, S_p, T, dt, M, dev
+                ))
+            # collect results
+            for future, candidate in zip(futures, population):
+                loss = future.result()
+                fitness = -loss
+                fitnesses.append(fitness)
+                print(f"[GPU {devices[futures.index(future)]}] Candidate: {candidate} | Loss: {loss}")
+                if fitness > best_fitness:
+                    best_fitness = fitness
+                    best_candidate = candidate
 
         # Sort population by fitness (highest first)
         sorted_population = [cand for cand, fit in sorted(zip(population, fitnesses), key=lambda x: x[1], reverse=True)]
