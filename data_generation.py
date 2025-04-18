@@ -231,7 +231,7 @@ def generate_two_link_lab_data(q1_range, q2_range, dq1_range, dq2_range, numICs,
     dq2 = (dq2_range[1] - dq2_range[0]) * torch.rand(numICs) + dq2_range[0]
 
     # --- NEW PART: choose 20% of trajectories to be “all-zero” ---
-    n_zero = int(0.2 * numICs)                 # how many to zero out
+    n_zero = int(0.4 * numICs)                 # how many to zero out
     perm   = torch.randperm(numICs)            # random shuffle of [0..numICs-1]
     zero_idx = perm[:n_zero]                   # pick first n_zero of them
     traj_zero_mask = torch.zeros(numICs, dtype=torch.bool)
