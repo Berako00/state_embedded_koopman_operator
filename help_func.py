@@ -32,7 +32,7 @@ def get_model_path(i):
         chosen_path = path5     
     else:
         chosen_path = path6
-    print("Using model path:", chosen_path)
+    # print("Using model path:", chosen_path)
     return chosen_path
 
 
