@@ -88,7 +88,7 @@ T = 50
 alpha = [0.001, 1e-5, 1e-12]
 W = 0
 M = 1 # Amount of models you want to run
-check_epoch = 10
+check_epoch = 1
 
 [Lowest_loss,Models_loss_list, Best_Model, Lowest_loss_index,
  Running_Losses_Array, Lgu_Array, L4_Array, L6_Array] = trainingfcn(eps, check_epoch, lr, batch_size, S_p, T, dt, alpha, Num_meas, Num_inputs, Num_x_Obsv, Num_x_Neurons, Num_u_Obsv,
