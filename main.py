@@ -53,7 +53,7 @@ if Setup == 'Simple':
 elif Setup == 'Twolink':
     q1_range = (-np.pi, np.pi)
     q2_range = q1_range
-    dq1_range = (-1, 1)
+    dq1_range = (-6, 6)
     dq2_range = dq1_range
     [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt)
 
@@ -61,8 +61,8 @@ elif Setup == 'Twolink':
 
     Num_meas = 4
     Num_inputs = 2
-    Num_x_Obsv = 29
-    Num_u_Obsv = 48
+    Num_x_Obsv = 14
+    Num_u_Obsv = 66
     Num_x_Neurons = 128
     Num_u_Neurons = 128
     Num_hidden_x_encoder = 3
@@ -85,7 +85,7 @@ lr = 1e-3        # Learning rate
 batch_size = 256
 S_p = 30
 T = 50
-alpha = [0.001, 1e-5, 1e-14]
+alpha = [0.001, 1e-5, 1e-12]
 W = 0
 M = 1 # Amount of models you want to run
 check_epoch = 10
