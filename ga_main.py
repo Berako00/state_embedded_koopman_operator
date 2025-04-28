@@ -26,40 +26,15 @@ print("Using device:", device)
 start_time = time.time()
 
 # ---- System Params ----------
+
 system = 'two_link'     # 'two_link' or 'simple'
 # ----------------------------
 
 # ------- Data Generation Params ----------
-numICs = 20000
+numICs = 30000
 T_step = 50
 dt = 0.02
 seed = 1
-
-if system == 'simple':
-  x1range = (-0.5, 0.5)
-  x2range = x1range
-  mu = -0.05
-  lam = -1
-
-  Num_meas = 2
-  Num_inputs = 1
-  
-elif system == 'two_link':
-  q1_range = (-math.pi, math.pi)
-  q2_range = (-math.pi, math.pi)
-  dq1_range = (-6, 6)
-  dq2_range = dq1_range
-  tau_max = 7.5
-
-  Num_meas = 4
-  Num_inputs = 2
-# -----------------------------------------
-
-if system == 'simple':
-  [train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, mu, lam, T_step, dt)
-
-elif system == 'two_link':
-  [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max)
 
 # ---- GA Params -------------
 use_ga = False
@@ -71,8 +46,8 @@ mutation_rate = 0.2
 
 # Define parameter ranges For GA
 param_ranges = {
-    "Num_x_Obsv": (2, 20),
-    "Num_u_Obsv": (2, 20),
+    "Num_x_Obsv": (2, 100),
+    "Num_u_Obsv": (2, 100),
     "Num_x_Neurons": (128, 128),
     "Num_u_Neurons": (128, 128),
     "Num_hidden_x": (3, 3),  # Shared for both x encoder and decoder
@@ -82,6 +57,49 @@ param_ranges = {
     "alpha2": (1e-18, 1e-12)
 }
 # ------------------------------
+
+if system == 'simple':
+  x1range = (-0.5, 0.5)
+  x2range = x1range
+  mu = -0.05
+  lam = -1
+
+  Num_meas = 2
+  Num_inputs = 1
+
+  [train_tensor, test_tensor, val_tensor] = DataGenerator(x1range, x2range, numICs, mu, lam, T_step, dt)
+
+  if not use_ga:
+      Num_x_Obsv    = 9
+      Num_u_Obsv    = 4
+      Num_x_Neurons = 128
+      Num_u_Neurons = 128
+      Num_hidden_x  = 3
+      Num_hidden_u  = 3
+      alpha         = [0.001, 1e-5, 1e-17]
+
+  
+elif system == 'two_link':
+  q1_range = (-math.pi, math.pi)
+  q2_range = (-math.pi, math.pi)
+  dq1_range = (-6, 6)
+  dq2_range = dq1_range
+  tau_max = 7.5
+
+  Num_meas = 4
+  Num_inputs = 2
+
+  [train_tensor, test_tensor, val_tensor] = TwoLinkRobotDataGenerator(q1_range, q2_range, dq1_range, dq2_range, numICs, T_step, dt, tau_max)
+
+  if not use_ga:
+        Num_x_Obsv    = 29
+        Num_u_Obsv    = 48
+        Num_x_Neurons = 128
+        Num_u_Neurons = 128
+        Num_hidden_x  = 3
+        Num_hidden_u  = 3
+        alpha         = [0.001, 1e-5, 1e-14]
+
 
 # ---- Define last training param -------
 eps_final = 5000      # Number of epochs for final training
@@ -93,15 +111,6 @@ S_p = 30
 T = len(train_tensor[0, :, :])
 W = 0
 M = 1  # Amount of models you want to run
-
-if not use_ga:
-    Num_x_Obsv    = 29
-    Num_u_Obsv    = 48
-    Num_x_Neurons = 128
-    Num_u_Neurons = 128
-    Num_hidden_x  = 3
-    Num_hidden_u  = 3
-    alpha         = [0.001, 1e-5, 1e-14]
 # ---------------------------------------
 
 
