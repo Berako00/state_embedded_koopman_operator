@@ -31,7 +31,7 @@ system = 'two_link'     # 'two_link' or 'simple'
 # ----------------------------
 
 # ------- Data Generation Params ----------
-numICs = 20000
+numICs = 30000
 T_step = 50
 dt = 0.02
 seed = 1
@@ -46,8 +46,8 @@ mutation_rate = 0.2
 
 # Define parameter ranges For GA
 param_ranges = {
-    "Num_x_Obsv": (2, 20),
-    "Num_u_Obsv": (2, 20),
+    "Num_x_Obsv": (2, 100),
+    "Num_u_Obsv": (2, 100),
     "Num_x_Neurons": (128, 128),
     "Num_u_Neurons": (128, 128),
     "Num_hidden_x": (3, 3),  # Shared for both x encoder and decoder
